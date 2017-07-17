@@ -109,5 +109,4 @@ namespace POSIntegrator
         public decimal Amount { get; set; }
         public string VAT { get; set; }
     }
-
 }
