@@ -33,5 +33,35 @@ namespace POSIntegrator.Properties {
                 return ((string)(this["pos13ConnectionString"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=DESKTOP-4RBPSD7;Initial Catalog=pos13_S1;Integrated Security=True")]
+        public string pos13_S1ConnectionString {
+            get {
+                return ((string)(this["pos13_S1ConnectionString"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=DESKTOP-4RBPSD7;Initial Catalog=pos13_S2;Integrated Security=True")]
+        public string pos13_S2ConnectionString {
+            get {
+                return ((string)(this["pos13_S2ConnectionString"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=DESKTOP-4RBPSD7;Initial Catalog=pos13_S3;Integrated Security=True")]
+        public string pos13_S3ConnectionString {
+            get {
+                return ((string)(this["pos13_S3ConnectionString"]));
+            }
+        }
     }
 }

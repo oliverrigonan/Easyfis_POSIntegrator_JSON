@@ -9,7 +9,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace POSIntegrator
+namespace POSdb1
 {
 	using System.Data.Linq;
 	using System.Data.Linq.Mapping;
@@ -22,8 +22,8 @@ namespace POSIntegrator
 	using System;
 	
 	
-	[global::System.Data.Linq.Mapping.DatabaseAttribute(Name="pos13")]
-	public partial class POSdbDataContext : System.Data.Linq.DataContext
+	[global::System.Data.Linq.Mapping.DatabaseAttribute(Name="pos13_S1")]
+	public partial class POSdb1DataContext : System.Data.Linq.DataContext
 	{
 		
 		private static System.Data.Linq.Mapping.MappingSource mappingSource = new AttributeMappingSource();
@@ -161,31 +161,31 @@ namespace POSIntegrator
     partial void DeleteTrnStockOut(TrnStockOut instance);
     #endregion
 		
-		public POSdbDataContext() : 
-				base(global::POSIntegrator.Properties.Settings.Default.pos13ConnectionString, mappingSource)
+		public POSdb1DataContext() : 
+				base(global::POSIntegrator.Properties.Settings.Default.pos13_S1ConnectionString, mappingSource)
 		{
 			OnCreated();
 		}
 		
-		public POSdbDataContext(string connection) : 
+		public POSdb1DataContext(string connection) : 
 				base(connection, mappingSource)
 		{
 			OnCreated();
 		}
 		
-		public POSdbDataContext(System.Data.IDbConnection connection) : 
+		public POSdb1DataContext(System.Data.IDbConnection connection) : 
 				base(connection, mappingSource)
 		{
 			OnCreated();
 		}
 		
-		public POSdbDataContext(string connection, System.Data.Linq.Mapping.MappingSource mappingSource) : 
+		public POSdb1DataContext(string connection, System.Data.Linq.Mapping.MappingSource mappingSource) : 
 				base(connection, mappingSource)
 		{
 			OnCreated();
 		}
 		
-		public POSdbDataContext(System.Data.IDbConnection connection, System.Data.Linq.Mapping.MappingSource mappingSource) : 
+		public POSdb1DataContext(System.Data.IDbConnection connection, System.Data.Linq.Mapping.MappingSource mappingSource) : 
 				base(connection, mappingSource)
 		{
 			OnCreated();

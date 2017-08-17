@@ -11,6 +11,22 @@
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>C:\Users\User\Desktop\POS Integrator Installer\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>1</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -30,6 +46,18 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>F34D156A295CECE7FA7C72C77250CBF43764E76D</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>POSIntegrator_TemporaryKey.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>true</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -54,10 +82,20 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="POSdb.designer.cs">
+    <Compile Include="POSdb1.designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>POSdb.dbml</DependentUpon>
+      <DependentUpon>POSdb1.dbml</DependentUpon>
+    </Compile>
+    <Compile Include="POSdb2.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>POSdb2.dbml</DependentUpon>
+    </Compile>
+    <Compile Include="POSdb3.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>POSdb3.dbml</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -70,14 +108,34 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-    <None Include="POSdb.dbml">
+    <None Include="POSdb1.dbml">
       <Generator>MSLinqToSQLGenerator</Generator>
-      <LastGenOutput>POSdb.designer.cs</LastGenOutput>
+      <LastGenOutput>POSdb1.designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <CustomToolNamespace>POSdb1</CustomToolNamespace>
     </None>
-    <None Include="POSdb.dbml.layout">
-      <DependentUpon>POSdb.dbml</DependentUpon>
+    <None Include="POSdb1.dbml.layout">
+      <DependentUpon>POSdb1.dbml</DependentUpon>
     </None>
+    <None Include="POSdb2.dbml">
+      <Generator>MSLinqToSQLGenerator</Generator>
+      <LastGenOutput>POSdb2.designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+      <CustomToolNamespace>POSdb2</CustomToolNamespace>
+    </None>
+    <None Include="POSdb2.dbml.layout">
+      <DependentUpon>POSdb2.dbml</DependentUpon>
+    </None>
+    <None Include="POSdb3.dbml">
+      <Generator>MSLinqToSQLGenerator</Generator>
+      <LastGenOutput>POSdb3.designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+      <CustomToolNamespace>POSdb3</CustomToolNamespace>
+    </None>
+    <None Include="POSdb3.dbml.layout">
+      <DependentUpon>POSdb3.dbml</DependentUpon>
+    </None>
+    <None Include="POSIntegrator_TemporaryKey.pfx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -85,6 +143,18 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{3259AA49-8AA1-44D3-9025-A0B520596A8C}" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.5.2">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.5.2 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
