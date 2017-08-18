@@ -143,18 +143,29 @@ namespace POSIntegrator
 
         static void Main(string[] args)
         {
+            int i = 0;
+            string jsonPath = "", apiUrl = "", database = "";
+            foreach(var arg in args)
+            {
+                if (i == 0) { jsonPath = arg; }
+                else if (i == 1) { apiUrl = arg; }
+                else if (i == 2) { database = arg; }
+                i++;
+            }
+
+
             Console.WriteLine("Innosoft POS Uplader");
             Console.WriteLine("Version: 1.20170717 ");
             Console.WriteLine("====================");
 
-            Console.Write("JSON Path:");
-            string jsonPath = Console.ReadLine();
+            //Console.Write("JSON Path:");
+            //string jsonPath = Console.ReadLine();
 
-            Console.Write("API Url: ");
-            string apiUrl = Console.ReadLine();
+            //Console.Write("API Url: ");
+            //string apiUrl = Console.ReadLine();
 
-            Console.Write("Database: ");
-            string database = Console.ReadLine();
+            //Console.Write("Database: ");
+            //string database = Console.ReadLine();
 
             while (true)
             {
@@ -266,9 +277,9 @@ namespace POSIntegrator
                         } 
                     }
                 }
-                catch
+                catch (Exception e)
                 {
-                    Console.WriteLine("Error...Retrying...");
+                    Console.WriteLine(e.ToString());
                 }
 
                 Thread.Sleep(5000);
