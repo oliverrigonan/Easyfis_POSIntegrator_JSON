@@ -13,6 +13,7 @@ namespace POSIntegrator
 {
     public class Collection
     {
+        public string SIDate { get; set; }
         public string BranchCode { get; set; }
         public string CustomerManualArticleCode { get; set; }
         public string CreatedBy { get; set; }
@@ -56,8 +57,7 @@ namespace POSIntegrator
                     {
                         json = r.ReadToEnd();
                     }
-
-
+                    
                     // Send json to server
                     var httpWebRequest = (HttpWebRequest)WebRequest.Create(apiUrl);
                     httpWebRequest.ContentType = "application/json";
@@ -188,13 +188,14 @@ namespace POSIntegrator
 
                                 var collectionData = new Collection()
                                 {
+                                    SIDate = collection.CollectionDate.ToShortDateString(),
                                     BranchCode = sysSettings.FirstOrDefault().BranchCode,
                                     CustomerManualArticleCode = collection.TrnSale.MstCustomer.CustomerCode,
                                     CreatedBy = sysSettings.FirstOrDefault().UserCode,
                                     Term = collection.TrnSale.MstTerm.Term,
                                     DocumentReference = collection.CollectionNumber,
                                     ManualSINumber = collection.TrnSale.SalesNumber,
-                                    Remarks = collection.Remarks != null ? collection.Remarks : "NA",
+                                    Remarks = collection.MstUser4.UserName,
                                     listPOSIntegrationTrnSalesInvoiceItem = listCollectionLines.ToList()
                                 };
 
@@ -240,6 +241,7 @@ namespace POSIntegrator
 
                                     var collectionData = new Collection()
                                     {
+                                        SIDate = collection.CollectionDate.ToShortDateString(),
                                         BranchCode = sysSettings.FirstOrDefault().BranchCode,
                                         CustomerManualArticleCode = collection.TrnSale.MstCustomer.CustomerCode,
                                         CreatedBy = sysSettings.FirstOrDefault().UserCode,
