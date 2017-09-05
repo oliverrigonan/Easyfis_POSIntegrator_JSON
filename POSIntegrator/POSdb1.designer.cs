@@ -162,7 +162,7 @@ namespace POSdb1
     #endregion
 		
 		public POSdb1DataContext() : 
-				base(global::POSIntegrator.Properties.Settings.Default.pos13_S1ConnectionString, mappingSource)
+				base(global::POSIntegrator.Properties.Settings.Default.pos13_S1ConnectionString1, mappingSource)
 		{
 			OnCreated();
 		}
