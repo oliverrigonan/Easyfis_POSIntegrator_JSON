@@ -210,7 +210,7 @@ namespace POSIntegrator
         // ==============
         // Fetch Stock In
         // ==============
-        public static void fetchStockInItems(String stockTransferDate, String toBranchCode)
+        public static void fetchStockInItems(string stockTransferDate, string toBranchCode)
         {
             try
             {
@@ -269,8 +269,9 @@ namespace POSIntegrator
                             listPOSIntegrationTrnStockTransferItem = stockTransferList.listPOSIntegrationTrnStockTransferItem.ToList()
                         };
 
-                        String jsonPath = "d:/innosoft/json/IN";
-                        String fileName = stockTransferList.BranchCode + "-" + stockTransferList.STNumber;
+                        string jsonPath = "d:/innosoft/json/IN";
+                        string fileName = stockTransferList.BranchCode + "-" + stockTransferList.STNumber;
+
                         string json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(stockTransferData);
                         string jsonFileName = jsonPath + "\\" + fileName + ".json";
                         File.WriteAllText(jsonFileName, json);
@@ -281,7 +282,7 @@ namespace POSIntegrator
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Console.WriteLine(e.ToString());
             }
         }
 
@@ -301,8 +302,8 @@ namespace POSIntegrator
             }
 
             Console.WriteLine("Innosoft POS Uploader");
-            Console.WriteLine("Version: 1.20170717 ");
-            Console.WriteLine("====================");
+            Console.WriteLine("Version: 1.20170905");
+            Console.WriteLine("=====================");
 
             while (true)
             {
