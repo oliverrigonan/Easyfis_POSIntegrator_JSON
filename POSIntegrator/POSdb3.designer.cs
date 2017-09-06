@@ -6755,6 +6755,8 @@ namespace POSdb3
 		
 		private EntitySet<MstItem> _MstItems;
 		
+		private EntitySet<SysSetting> _SysSettings;
+		
 		private EntitySet<TrnPurchaseOrder> _TrnPurchaseOrders;
 		
 		private EntityRef<MstAccount> _MstAccount;
@@ -6802,6 +6804,7 @@ namespace POSdb3
 		public MstSupplier()
 		{
 			this._MstItems = new EntitySet<MstItem>(new Action<MstItem>(this.attach_MstItems), new Action<MstItem>(this.detach_MstItems));
+			this._SysSettings = new EntitySet<SysSetting>(new Action<SysSetting>(this.attach_SysSettings), new Action<SysSetting>(this.detach_SysSettings));
 			this._TrnPurchaseOrders = new EntitySet<TrnPurchaseOrder>(new Action<TrnPurchaseOrder>(this.attach_TrnPurchaseOrders), new Action<TrnPurchaseOrder>(this.detach_TrnPurchaseOrders));
 			this._MstAccount = default(EntityRef<MstAccount>);
 			this._MstTerm = default(EntityRef<MstTerm>);
@@ -7119,6 +7122,19 @@ namespace POSdb3
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="MstSupplier_SysSetting", Storage="_SysSettings", ThisKey="Id", OtherKey="PostSupplierId")]
+		public EntitySet<SysSetting> SysSettings
+		{
+			get
+			{
+				return this._SysSettings;
+			}
+			set
+			{
+				this._SysSettings.Assign(value);
+			}
+		}
+		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="MstSupplier_TrnPurchaseOrder", Storage="_TrnPurchaseOrders", ThisKey="Id", OtherKey="SupplierId")]
 		public EntitySet<TrnPurchaseOrder> TrnPurchaseOrders
 		{
@@ -7295,6 +7311,18 @@ namespace POSdb3
 		}
 		
 		private void detach_MstItems(MstItem entity)
+		{
+			this.SendPropertyChanging();
+			entity.MstSupplier = null;
+		}
+		
+		private void attach_SysSettings(SysSetting entity)
+		{
+			this.SendPropertyChanging();
+			entity.MstSupplier = this;
+		}
+		
+		private void detach_SysSettings(SysSetting entity)
 		{
 			this.SendPropertyChanging();
 			entity.MstSupplier = null;
@@ -8695,6 +8723,8 @@ namespace POSdb3
 		
 		private EntitySet<SysSalesLocked> _SysSalesLockeds;
 		
+		private EntitySet<SysSetting> _SysSettings;
+		
 		private EntitySet<TrnCollection> _TrnCollections;
 		
 		private EntitySet<TrnCollection> _TrnCollections1;
@@ -8796,6 +8826,7 @@ namespace POSdb3
 			this._MstUserForms = new EntitySet<MstUserForm>(new Action<MstUserForm>(this.attach_MstUserForms), new Action<MstUserForm>(this.detach_MstUserForms));
 			this._SysAuditTrails = new EntitySet<SysAuditTrail>(new Action<SysAuditTrail>(this.attach_SysAuditTrails), new Action<SysAuditTrail>(this.detach_SysAuditTrails));
 			this._SysSalesLockeds = new EntitySet<SysSalesLocked>(new Action<SysSalesLocked>(this.attach_SysSalesLockeds), new Action<SysSalesLocked>(this.detach_SysSalesLockeds));
+			this._SysSettings = new EntitySet<SysSetting>(new Action<SysSetting>(this.attach_SysSettings), new Action<SysSetting>(this.detach_SysSettings));
 			this._TrnCollections = new EntitySet<TrnCollection>(new Action<TrnCollection>(this.attach_TrnCollections), new Action<TrnCollection>(this.detach_TrnCollections));
 			this._TrnCollections1 = new EntitySet<TrnCollection>(new Action<TrnCollection>(this.attach_TrnCollections1), new Action<TrnCollection>(this.detach_TrnCollections1));
 			this._TrnCollections2 = new EntitySet<TrnCollection>(new Action<TrnCollection>(this.attach_TrnCollections2), new Action<TrnCollection>(this.detach_TrnCollections2));
@@ -9170,6 +9201,19 @@ namespace POSdb3
 			set
 			{
 				this._SysSalesLockeds.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="MstUser_SysSetting", Storage="_SysSettings", ThisKey="Id", OtherKey="PostUserId")]
+		public EntitySet<SysSetting> SysSettings
+		{
+			get
+			{
+				return this._SysSettings;
+			}
+			set
+			{
+				this._SysSettings.Assign(value);
 			}
 		}
 		
@@ -9723,6 +9767,18 @@ namespace POSdb3
 		}
 		
 		private void detach_SysSalesLockeds(SysSalesLocked entity)
+		{
+			this.SendPropertyChanging();
+			entity.MstUser = null;
+		}
+		
+		private void attach_SysSettings(SysSetting entity)
+		{
+			this.SendPropertyChanging();
+			entity.MstUser = this;
+		}
+		
+		private void detach_SysSettings(SysSetting entity)
 		{
 			this.SendPropertyChanging();
 			entity.MstUser = null;
@@ -11125,6 +11181,14 @@ namespace POSdb3
 		
 		private string _UserCode;
 		
+		private int _PostUserId;
+		
+		private int _PostSupplierId;
+		
+		private EntityRef<MstSupplier> _MstSupplier;
+		
+		private EntityRef<MstUser> _MstUser;
+		
     #region Extensibility Method Definitions
     partial void OnLoaded();
     partial void OnValidate(System.Data.Linq.ChangeAction action);
@@ -11135,10 +11199,16 @@ namespace POSdb3
     partial void OnBranchCodeChanged();
     partial void OnUserCodeChanging(string value);
     partial void OnUserCodeChanged();
+    partial void OnPostUserIdChanging(int value);
+    partial void OnPostUserIdChanged();
+    partial void OnPostSupplierIdChanging(int value);
+    partial void OnPostSupplierIdChanged();
     #endregion
 		
 		public SysSetting()
 		{
+			this._MstSupplier = default(EntityRef<MstSupplier>);
+			this._MstUser = default(EntityRef<MstUser>);
 			OnCreated();
 		}
 		
@@ -11198,6 +11268,122 @@ namespace POSdb3
 					this._UserCode = value;
 					this.SendPropertyChanged("UserCode");
 					this.OnUserCodeChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PostUserId", DbType="Int NOT NULL")]
+		public int PostUserId
+		{
+			get
+			{
+				return this._PostUserId;
+			}
+			set
+			{
+				if ((this._PostUserId != value))
+				{
+					if (this._MstUser.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnPostUserIdChanging(value);
+					this.SendPropertyChanging();
+					this._PostUserId = value;
+					this.SendPropertyChanged("PostUserId");
+					this.OnPostUserIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PostSupplierId", DbType="Int NOT NULL")]
+		public int PostSupplierId
+		{
+			get
+			{
+				return this._PostSupplierId;
+			}
+			set
+			{
+				if ((this._PostSupplierId != value))
+				{
+					if (this._MstSupplier.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnPostSupplierIdChanging(value);
+					this.SendPropertyChanging();
+					this._PostSupplierId = value;
+					this.SendPropertyChanged("PostSupplierId");
+					this.OnPostSupplierIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="MstSupplier_SysSetting", Storage="_MstSupplier", ThisKey="PostSupplierId", OtherKey="Id", IsForeignKey=true)]
+		public MstSupplier MstSupplier
+		{
+			get
+			{
+				return this._MstSupplier.Entity;
+			}
+			set
+			{
+				MstSupplier previousValue = this._MstSupplier.Entity;
+				if (((previousValue != value) 
+							|| (this._MstSupplier.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._MstSupplier.Entity = null;
+						previousValue.SysSettings.Remove(this);
+					}
+					this._MstSupplier.Entity = value;
+					if ((value != null))
+					{
+						value.SysSettings.Add(this);
+						this._PostSupplierId = value.Id;
+					}
+					else
+					{
+						this._PostSupplierId = default(int);
+					}
+					this.SendPropertyChanged("MstSupplier");
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="MstUser_SysSetting", Storage="_MstUser", ThisKey="PostUserId", OtherKey="Id", IsForeignKey=true)]
+		public MstUser MstUser
+		{
+			get
+			{
+				return this._MstUser.Entity;
+			}
+			set
+			{
+				MstUser previousValue = this._MstUser.Entity;
+				if (((previousValue != value) 
+							|| (this._MstUser.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._MstUser.Entity = null;
+						previousValue.SysSettings.Remove(this);
+					}
+					this._MstUser.Entity = value;
+					if ((value != null))
+					{
+						value.SysSettings.Add(this);
+						this._PostUserId = value.Id;
+					}
+					else
+					{
+						this._PostUserId = default(int);
+					}
+					this.SendPropertyChanged("MstUser");
 				}
 			}
 		}

@@ -26,7 +26,7 @@ namespace POSIntegrator
         public string DocumentReference { get; set; }
         public string ManualSINumber { get; set; }
         public string Remarks { get; set; }
-        public List<CollectionLines> listPOSIntegrationTrnSalesInvoiceItem { get; set; }
+        public List<CollectionLines> ListPOSIntegrationTrnSalesInvoiceItem { get; set; }
     }
 
     // ================
@@ -68,7 +68,7 @@ namespace POSIntegrator
         public String CreatedDateTime { get; set; }
         public String UpdatedBy { get; set; }
         public String UpdatedDateTime { get; set; }
-        public List<TrnStockTransferItems> listPOSIntegrationTrnStockTransferItem { get; set; }
+        public List<TrnStockTransferItems> ListPOSIntegrationTrnStockTransferItem { get; set; }
     }
 
     // ====================
@@ -105,7 +105,7 @@ namespace POSIntegrator
         // ===============
         // Send Json Files
         // ===============
-        public static void sendJsonFiles(string jsonPath, string apiUrl, string database)
+        public static void SendJsonFiles(string jsonPath, string apiUrl, string database)
         {
             try
             {
@@ -207,10 +207,26 @@ namespace POSIntegrator
             }
         }
 
-        // ==============
-        // Fetch Stock In
-        // ==============
-        public static void fetchStockInItems(string stockTransferDate, string toBranchCode)
+        // ===================
+        // Fill Leading Zeroes
+        // ===================
+        public static String FillLeadingZeroes(Int32 number, Int32 length)
+        {
+            var result = number.ToString();
+            var pad = length - result.Length;
+            while (pad > 0)
+            {
+                result = '0' + result;
+                pad--;
+            }
+
+            return result;
+        }
+
+        // ============
+        // GET Stock In
+        // ============
+        public static void GetStockIn(string stockTransferDate, string toBranchCode)
         {
             try
             {
@@ -228,7 +244,7 @@ namespace POSIntegrator
                     foreach (var stockTransferList in stockTransferLists)
                     {
                         List<TrnStockTransferItems> listStockTransferItems = new List<TrnStockTransferItems>();
-                        foreach (var stockTransferListItem in stockTransferList.listPOSIntegrationTrnStockTransferItem)
+                        foreach (var stockTransferListItem in stockTransferList.ListPOSIntegrationTrnStockTransferItem)
                         {
                             listStockTransferItems.Add(new TrnStockTransferItems()
                             {
@@ -266,7 +282,7 @@ namespace POSIntegrator
                             CreatedDateTime = stockTransferList.CreatedDateTime,
                             UpdatedBy = stockTransferList.UpdatedBy,
                             UpdatedDateTime = stockTransferList.UpdatedDateTime,
-                            listPOSIntegrationTrnStockTransferItem = stockTransferList.listPOSIntegrationTrnStockTransferItem.ToList()
+                            ListPOSIntegrationTrnStockTransferItem = stockTransferList.ListPOSIntegrationTrnStockTransferItem.ToList()
                         };
 
                         string jsonPath = "d:/innosoft/json/IN";
@@ -277,7 +293,115 @@ namespace POSIntegrator
                         File.WriteAllText(jsonFileName, json);
 
                         Console.WriteLine("Saving " + stockTransferList.STNumber + "...");
+                        InsertStockIn();
                     }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+        }
+
+        // ===============
+        // INSERT Stock In
+        // ===============
+        public static void InsertStockIn()
+        {
+            try
+            {
+                string jsonPath = "d:/innosoft/json/IN";
+                List<string> files = new List<string>(Directory.EnumerateFiles(jsonPath));
+                foreach (var file in files)
+                {
+                    // ==============
+                    // Read json file
+                    // ==============
+                    string json;
+                    using (StreamReader r = new StreamReader(file))
+                    {
+                        json = r.ReadToEnd();
+                    }
+
+                    var json_serializer = new JavaScriptSerializer();
+                    TrnStockTransfer st = json_serializer.Deserialize<TrnStockTransfer>(json);
+
+                    string fileName = st.BranchCode + "-" + st.STNumber;
+                    var stockIn = from d in posData1.TrnStockIns
+                                  where d.Remarks.Equals(fileName)
+                                  select d;
+
+                    if (!stockIn.Any())
+                    {
+                        var defaultPeriod = from d in posData1.MstPeriods select d;
+                        var defaultSettings = from d in posData1.SysSettings select d;
+
+                        var lastStockInNumber = from d in posData1.TrnStockIns.OrderByDescending(d => d.Id) select d;
+                        var stockInNumberResult = defaultPeriod.FirstOrDefault().Period + "-000001";
+
+                        if (lastStockInNumber.Any())
+                        {
+                            var stockInNumberSplitStrings = lastStockInNumber.FirstOrDefault().StockInNumber;
+                            int secondIndex = stockInNumberSplitStrings.IndexOf('-', stockInNumberSplitStrings.IndexOf('-'));
+                            var stockInNumberSplitStringValue = stockInNumberSplitStrings.Substring(secondIndex + 1);
+                            var stockInNumber = Convert.ToInt32(stockInNumberSplitStringValue) + 000001;
+                            stockInNumberResult = defaultPeriod.FirstOrDefault().Period + "-" + FillLeadingZeroes(stockInNumber, 6);
+                        }
+
+                        POSdb1.TrnStockIn newStockIn = new POSdb1.TrnStockIn();
+                        newStockIn.PeriodId = defaultPeriod.FirstOrDefault().Id;
+                        newStockIn.StockInDate = Convert.ToDateTime(st.STDate);
+                        newStockIn.StockInNumber = stockInNumberResult;
+                        newStockIn.SupplierId = defaultSettings.FirstOrDefault().PostSupplierId;
+                        newStockIn.Remarks = fileName;
+                        newStockIn.IsReturn = false;
+                        newStockIn.CollectionId = null;
+                        newStockIn.PurchaseOrderId = null;
+                        newStockIn.PreparedBy = defaultSettings.FirstOrDefault().PostUserId;
+                        newStockIn.CheckedBy = defaultSettings.FirstOrDefault().PostUserId;
+                        newStockIn.ApprovedBy = defaultSettings.FirstOrDefault().PostUserId;
+                        newStockIn.IsLocked = 1;
+                        newStockIn.EntryUserId = defaultSettings.FirstOrDefault().PostUserId;
+                        newStockIn.EntryDateTime = DateTime.Now;
+                        newStockIn.UpdateUserId = defaultSettings.FirstOrDefault().PostUserId;
+                        newStockIn.UpdateDateTime = DateTime.Now;
+                        newStockIn.SalesId = null;
+                        posData1.TrnStockIns.InsertOnSubmit(newStockIn);
+                        posData1.SubmitChanges();
+
+                        foreach (var item in st.ListPOSIntegrationTrnStockTransferItem.ToList())
+                        {
+                            var items = from d in posData1.MstItems
+                                        where d.BarCode.Equals(item.ItemCode)
+                                        select d;
+
+                            if (items.Any())
+                            {
+                                var units = from d in posData1.MstUnits
+                                            where d.Unit.Equals(item.Unit)
+                                            select d;
+
+                                if (units.Any())
+                                {
+                                    POSdb1.TrnStockInLine newStockInLine = new POSdb1.TrnStockInLine();
+                                    newStockInLine.StockInId = newStockIn.Id;
+                                    newStockInLine.ItemId = items.FirstOrDefault().Id;
+                                    newStockInLine.UnitId = units.FirstOrDefault().Id;
+                                    newStockInLine.Quantity = item.Quantity;
+                                    newStockInLine.Cost = item.Cost;
+                                    newStockInLine.Amount = item.Amount;
+                                    newStockInLine.ExpiryDate = items.FirstOrDefault().ExpiryDate;
+                                    newStockInLine.LotNumber = items.FirstOrDefault().LotNumber;
+                                    newStockInLine.AssetAccountId = items.FirstOrDefault().AssetAccountId;
+                                    newStockInLine.Price = items.FirstOrDefault().Price;
+                                    posData1.TrnStockInLines.InsertOnSubmit(newStockInLine);
+                                    posData1.SubmitChanges();
+                                }
+                            }
+                        }
+                    }
+
+                    File.Delete(file);
                 }
             }
             catch (Exception e)
@@ -353,7 +477,7 @@ namespace POSIntegrator
                                         DocumentReference = collection.CollectionNumber,
                                         ManualSINumber = collection.TrnSale.SalesNumber,
                                         Remarks = collection.MstUser4.UserName,
-                                        listPOSIntegrationTrnSalesInvoiceItem = listCollectionLines.ToList()
+                                        ListPOSIntegrationTrnSalesInvoiceItem = listCollectionLines.ToList()
                                     };
 
                                     string json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(collectionData);
@@ -374,7 +498,7 @@ namespace POSIntegrator
                             DateTime dateTimeToday = DateTime.Today;
                             var currentDate = dateTimeToday.ToString("MM-dd-yyyy", CultureInfo.InvariantCulture);
                             var branchCode = sysSettings.FirstOrDefault().BranchCode;
-                            fetchStockInItems(currentDate, branchCode);
+                            GetStockIn(currentDate, branchCode);
                         }
                     }
                     else if (database.Equals("2"))
@@ -421,7 +545,7 @@ namespace POSIntegrator
                                         DocumentReference = collection.CollectionNumber,
                                         ManualSINumber = collection.TrnSale.SalesNumber,
                                         Remarks = collection.MstUser4.UserName,
-                                        listPOSIntegrationTrnSalesInvoiceItem = listCollectionLines.ToList()
+                                        ListPOSIntegrationTrnSalesInvoiceItem = listCollectionLines.ToList()
                                     };
 
                                     string json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(collectionData);
@@ -442,7 +566,7 @@ namespace POSIntegrator
                             DateTime dateTimeToday = DateTime.Today;
                             var currentDate = dateTimeToday.ToString("MM-dd-yyyy", CultureInfo.InvariantCulture);
                             var branchCode = sysSettings.FirstOrDefault().BranchCode;
-                            fetchStockInItems(currentDate, branchCode);
+                            GetStockIn(currentDate, branchCode);
                         }
                     }
                     else if (database.Equals("3"))
@@ -489,7 +613,7 @@ namespace POSIntegrator
                                         DocumentReference = collection.CollectionNumber,
                                         ManualSINumber = collection.TrnSale.SalesNumber,
                                         Remarks = collection.MstUser4.UserName,
-                                        listPOSIntegrationTrnSalesInvoiceItem = listCollectionLines.ToList()
+                                        ListPOSIntegrationTrnSalesInvoiceItem = listCollectionLines.ToList()
                                     };
 
                                     string json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(collectionData);
@@ -510,7 +634,7 @@ namespace POSIntegrator
                             DateTime dateTimeToday = DateTime.Today;
                             var currentDate = dateTimeToday.ToString("MM-dd-yyyy", CultureInfo.InvariantCulture);
                             var branchCode = sysSettings.FirstOrDefault().BranchCode;
-                            fetchStockInItems(currentDate, branchCode);
+                            GetStockIn(currentDate, branchCode);
                         }
                     }
                     else
@@ -528,7 +652,7 @@ namespace POSIntegrator
                 // ===============
                 // Send Json Files
                 // ===============
-                sendJsonFiles(jsonPath, apiUrl, database);
+                SendJsonFiles(jsonPath, apiUrl, database);
             }
         }
     }

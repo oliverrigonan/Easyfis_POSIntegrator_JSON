@@ -279,6 +279,7 @@
       <Column Name="UpdateDateTime" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
       <Column Name="IsLocked" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
       <Association Name="MstSupplier_MstItem" Member="MstItems" ThisKey="Id" OtherKey="DefaultSupplierId" Type="MstItem" />
+      <Association Name="MstSupplier_SysSetting" Member="SysSettings" ThisKey="Id" OtherKey="PostSupplierId" Type="SysSetting" />
       <Association Name="MstSupplier_TrnPurchaseOrder" Member="TrnPurchaseOrders" ThisKey="Id" OtherKey="SupplierId" Type="TrnPurchaseOrder" />
       <Association Name="MstAccount_MstSupplier" Member="MstAccount" ThisKey="AccountId" OtherKey="Id" Type="MstAccount" IsForeignKey="true" />
       <Association Name="MstTerm_MstSupplier" Member="MstTerm" ThisKey="TermId" OtherKey="Id" Type="MstTerm" IsForeignKey="true" />
@@ -375,6 +376,7 @@
       <Association Name="MstUser_MstUserForm" Member="MstUserForms" ThisKey="Id" OtherKey="UserId" Type="MstUserForm" />
       <Association Name="MstUser_SysAuditTrail" Member="SysAuditTrails" ThisKey="Id" OtherKey="UserId" Type="SysAuditTrail" />
       <Association Name="MstUser_SysSalesLocked" Member="SysSalesLockeds" ThisKey="Id" OtherKey="UserId" Type="SysSalesLocked" />
+      <Association Name="MstUser_SysSetting" Member="SysSettings" ThisKey="Id" OtherKey="PostUserId" Type="SysSetting" />
       <Association Name="MstUser_TrnCollection" Member="TrnCollections" ThisKey="Id" OtherKey="PreparedBy" Type="TrnCollection" />
       <Association Name="MstUser_TrnCollection1" Member="TrnCollections1" ThisKey="Id" OtherKey="CheckedBy" Type="TrnCollection" />
       <Association Name="MstUser_TrnCollection2" Member="TrnCollections2" ThisKey="Id" OtherKey="ApprovedBy" Type="TrnCollection" />
@@ -462,6 +464,10 @@
       <Column Name="Id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
       <Column Name="BranchCode" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="UserCode" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="PostUserId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="PostSupplierId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Association Name="MstSupplier_SysSetting" Member="MstSupplier" ThisKey="PostSupplierId" OtherKey="Id" Type="MstSupplier" IsForeignKey="true" />
+      <Association Name="MstUser_SysSetting" Member="MstUser" ThisKey="PostUserId" OtherKey="Id" Type="MstUser" IsForeignKey="true" />
     </Type>
   </Table>
   <Table Name="dbo.TrnCollection" Member="TrnCollections">
