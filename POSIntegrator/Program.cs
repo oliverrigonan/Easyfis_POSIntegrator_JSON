@@ -149,7 +149,7 @@ namespace POSIntegrator
                         if (database.Equals("1"))
                         {
                             var collections = from d in posData1.TrnCollections
-                                              where d.CollectionNumber == c.DocumentReference
+                                              where d.CollectionNumber.Equals(c.DocumentReference)
                                               select d;
 
                             if (collections.Any())
@@ -165,7 +165,7 @@ namespace POSIntegrator
                             if (database.Equals("2"))
                             {
                                 var collections = from d in posData2.TrnCollections
-                                                  where d.CollectionNumber == c.DocumentReference
+                                                  where d.CollectionNumber.Equals(c.DocumentReference)
                                                   select d;
 
                                 if (collections.Any())
@@ -181,7 +181,7 @@ namespace POSIntegrator
                                 if (database.Equals("3"))
                                 {
                                     var collections = from d in posData3.TrnCollections
-                                                      where d.CollectionNumber == c.DocumentReference
+                                                      where d.CollectionNumber.Equals(c.DocumentReference)
                                                       select d;
 
                                     if (collections.Any())
@@ -395,6 +395,23 @@ namespace POSIntegrator
                                     newStockInLine.AssetAccountId = items.FirstOrDefault().AssetAccountId;
                                     newStockInLine.Price = items.FirstOrDefault().Price;
                                     posData1.TrnStockInLines.InsertOnSubmit(newStockInLine);
+
+                                    var currentItem = from d in posData1.MstItems
+                                                      where d.Id == newStockInLine.ItemId
+                                                      select d;
+
+                                    if (currentItem.Any())
+                                    {
+                                        Decimal currentOnHandQuantity = currentItem.FirstOrDefault().OnhandQuantity;
+                                        Decimal totalQuantity = currentOnHandQuantity + Convert.ToDecimal(item.Quantity);
+
+                                        Console.WriteLine(currentOnHandQuantity);
+                                        Console.WriteLine(totalQuantity);
+
+                                        var updateItem = currentItem.FirstOrDefault();
+                                        updateItem.OnhandQuantity = totalQuantity;
+                                    }
+
                                     posData1.SubmitChanges();
                                 }
                             }
@@ -406,7 +423,7 @@ namespace POSIntegrator
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Console.WriteLine(e);
             }
         }
 
