@@ -34,16 +34,17 @@ namespace POSIntegrator
     // ================
     public class CollectionLines
     {
-        public string ItemManualArticleCode { get; set; }
-        public string Particulars { get; set; }
-        public string Unit { get; set; }
-        public decimal Quantity { get; set; }
-        public decimal Price { get; set; }
-        public string Discount { get; set; }
-        public decimal DiscountAmount { get; set; }
-        public decimal NetPrice { get; set; }
-        public decimal Amount { get; set; }
-        public string VAT { get; set; }
+        public String ItemManualArticleCode { get; set; }
+        public String Particulars { get; set; }
+        public String Unit { get; set; }
+        public Decimal Quantity { get; set; }
+        public Decimal Price { get; set; }
+        public String Discount { get; set; }
+        public Decimal DiscountAmount { get; set; }
+        public Decimal NetPrice { get; set; }
+        public Decimal Amount { get; set; }
+        public String VAT { get; set; }
+        public String SalesItemTimeStamp { get; set; }
     }
 
     // ==============
@@ -348,24 +349,27 @@ namespace POSIntegrator
                             stockInNumberResult = defaultPeriod.FirstOrDefault().Period + "-" + FillLeadingZeroes(stockInNumber, 6);
                         }
 
-                        POSdb1.TrnStockIn newStockIn = new POSdb1.TrnStockIn();
-                        newStockIn.PeriodId = defaultPeriod.FirstOrDefault().Id;
-                        newStockIn.StockInDate = Convert.ToDateTime(st.STDate);
-                        newStockIn.StockInNumber = stockInNumberResult;
-                        newStockIn.SupplierId = defaultSettings.FirstOrDefault().PostSupplierId;
-                        newStockIn.Remarks = fileName;
-                        newStockIn.IsReturn = false;
-                        newStockIn.CollectionId = null;
-                        newStockIn.PurchaseOrderId = null;
-                        newStockIn.PreparedBy = defaultSettings.FirstOrDefault().PostUserId;
-                        newStockIn.CheckedBy = defaultSettings.FirstOrDefault().PostUserId;
-                        newStockIn.ApprovedBy = defaultSettings.FirstOrDefault().PostUserId;
-                        newStockIn.IsLocked = 1;
-                        newStockIn.EntryUserId = defaultSettings.FirstOrDefault().PostUserId;
-                        newStockIn.EntryDateTime = DateTime.Now;
-                        newStockIn.UpdateUserId = defaultSettings.FirstOrDefault().PostUserId;
-                        newStockIn.UpdateDateTime = DateTime.Now;
-                        newStockIn.SalesId = null;
+                        POSdb1.TrnStockIn newStockIn = new POSdb1.TrnStockIn
+                        {
+                            PeriodId = defaultPeriod.FirstOrDefault().Id,
+                            StockInDate = Convert.ToDateTime(st.STDate),
+                            StockInNumber = stockInNumberResult,
+                            SupplierId = defaultSettings.FirstOrDefault().PostSupplierId,
+                            Remarks = fileName,
+                            IsReturn = false,
+                            CollectionId = null,
+                            PurchaseOrderId = null,
+                            PreparedBy = defaultSettings.FirstOrDefault().PostUserId,
+                            CheckedBy = defaultSettings.FirstOrDefault().PostUserId,
+                            ApprovedBy = defaultSettings.FirstOrDefault().PostUserId,
+                            IsLocked = 1,
+                            EntryUserId = defaultSettings.FirstOrDefault().PostUserId,
+                            EntryDateTime = DateTime.Now,
+                            UpdateUserId = defaultSettings.FirstOrDefault().PostUserId,
+                            UpdateDateTime = DateTime.Now,
+                            SalesId = null
+                        };
+
                         posData1.TrnStockIns.InsertOnSubmit(newStockIn);
                         posData1.SubmitChanges();
 
@@ -480,7 +484,8 @@ namespace POSIntegrator
                                             DiscountAmount = salesLine.DiscountAmount,
                                             NetPrice = salesLine.NetPrice,
                                             Amount = salesLine.Amount,
-                                            VAT = salesLine.MstTax.Tax
+                                            VAT = salesLine.MstTax.Tax,
+                                            SalesItemTimeStamp = salesLine.SalesLineTimeStamp.ToString("MM/dd/yyyy HH:mm:ss.fff", CultureInfo.InvariantCulture)
                                         });
                                     }
 
@@ -548,7 +553,8 @@ namespace POSIntegrator
                                             DiscountAmount = salesLine.DiscountAmount,
                                             NetPrice = salesLine.NetPrice,
                                             Amount = salesLine.Amount,
-                                            VAT = salesLine.MstTax.Tax
+                                            VAT = salesLine.MstTax.Tax,
+                                            SalesItemTimeStamp = salesLine.SalesLineTimeStamp.ToString("MM/dd/yyyy HH:mm:ss.fff", CultureInfo.InvariantCulture)
                                         });
                                     }
 
@@ -616,7 +622,8 @@ namespace POSIntegrator
                                             DiscountAmount = salesLine.DiscountAmount,
                                             NetPrice = salesLine.NetPrice,
                                             Amount = salesLine.Amount,
-                                            VAT = salesLine.MstTax.Tax
+                                            VAT = salesLine.MstTax.Tax,
+                                            SalesItemTimeStamp = salesLine.SalesLineTimeStamp.ToString("MM/dd/yyyy HH:mm:ss.fff", CultureInfo.InvariantCulture)
                                         });
                                     }
 
