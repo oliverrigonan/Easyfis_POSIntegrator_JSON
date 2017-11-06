@@ -332,8 +332,15 @@ namespace POSIntegrator
                         string jsonFileName = jsonPath + "\\" + fileName + ".json";
                         File.WriteAllText(jsonFileName, json);
 
-                        Console.WriteLine("Saving IN Number: " + stockTransferList.STNumber + "...");
-                        InsertStockIn();
+                        var stockIn = from d in posData1.TrnStockIns
+                                      where d.Remarks.Equals(fileName)
+                                      select d;
+
+                        if (!stockIn.Any())
+                        {
+                            Console.WriteLine("Saving Stock-In " + fileName + "...");
+                            InsertStockIn();
+                        }
                     }
                 }
             }
@@ -459,6 +466,7 @@ namespace POSIntegrator
                                     }
 
                                     posData1.SubmitChanges();
+                                    Console.WriteLine("Stock-In " + fileName + " was successfully saved!");
                                 }
                             }
                         }
@@ -480,7 +488,7 @@ namespace POSIntegrator
         {
             try
             {
-                var httpWebRequest = (HttpWebRequest)WebRequest.Create("http://www.easyfis.com/api/get/POSIntegration/stockOut/" + stockOutDate + "/" + branchCode);
+                var httpWebRequest = (HttpWebRequest)WebRequest.Create("http://localhost:2651/api/get/POSIntegration/stockOut/" + stockOutDate + "/" + branchCode);
                 httpWebRequest.Method = "GET";
                 httpWebRequest.Accept = "application/json";
 
@@ -537,8 +545,15 @@ namespace POSIntegrator
                         string jsonFileName = jsonPath + "\\" + fileName + ".json";
                         File.WriteAllText(jsonFileName, json);
 
-                        Console.WriteLine("Saving OT Number: " + stockOutList.OTNumber + "...");
-                        InsertStockOut();
+                        var stockOut = from d in posData1.TrnStockOuts
+                                       where d.Remarks.Equals(fileName)
+                                       select d;
+
+                        if (!stockOut.Any())
+                        {
+                            Console.WriteLine("Saving Stock-Out " + fileName + "...");
+                            InsertStockOut();
+                        }
                     }
                 }
             }
@@ -659,6 +674,7 @@ namespace POSIntegrator
                                         }
 
                                         posData1.SubmitChanges();
+                                        Console.WriteLine("Stock-Out " + fileName + " was successfully saved!");
                                     }
                                 }
                             }
