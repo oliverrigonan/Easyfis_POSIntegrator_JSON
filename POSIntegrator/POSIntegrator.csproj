@@ -82,6 +82,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entities\TrnCollection.cs" />
+    <Compile Include="Entities\TrnCollectionLines.cs" />
     <Compile Include="POSdb1.designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -104,6 +106,10 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="Entities\TrnStockOut.cs" />
+    <Compile Include="Entities\TrnStockOutItem.cs" />
+    <Compile Include="Entities\TrnStockTransfer.cs" />
+    <Compile Include="Entities\TrnStockTransferItem.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

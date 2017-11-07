@@ -13,126 +13,6 @@ using System.Globalization;
 
 namespace POSIntegrator
 {
-    // ==========
-    // Collection 
-    // ==========
-    public class Collection
-    {
-        public string SIDate { get; set; }
-        public string BranchCode { get; set; }
-        public string CustomerManualArticleCode { get; set; }
-        public string CreatedBy { get; set; }
-        public string Term { get; set; }
-        public string DocumentReference { get; set; }
-        public string ManualSINumber { get; set; }
-        public string Remarks { get; set; }
-        public List<CollectionLines> ListPOSIntegrationTrnSalesInvoiceItem { get; set; }
-    }
-
-    // ================
-    // Collection Lines
-    // ================
-    public class CollectionLines
-    {
-        public String ItemManualArticleCode { get; set; }
-        public String Particulars { get; set; }
-        public String Unit { get; set; }
-        public Decimal Quantity { get; set; }
-        public Decimal Price { get; set; }
-        public String Discount { get; set; }
-        public Decimal DiscountAmount { get; set; }
-        public Decimal NetPrice { get; set; }
-        public Decimal Amount { get; set; }
-        public String VAT { get; set; }
-        public String SalesItemTimeStamp { get; set; }
-    }
-
-    // ==============
-    // Stock Transfer
-    // ==============
-    public class TrnStockTransfer
-    {
-        public String BranchCode { get; set; }
-        public String Branch { get; set; }
-        public String STNumber { get; set; }
-        public String STDate { get; set; }
-        public String ToBranch { get; set; }
-        public String ToBranchCode { get; set; }
-        public String Article { get; set; }
-        public String Particulars { get; set; }
-        public String ManualSTNumber { get; set; }
-        public String PreparedBy { get; set; }
-        public String CheckedBy { get; set; }
-        public String ApprovedBy { get; set; }
-        public Boolean IsLocked { get; set; }
-        public String CreatedBy { get; set; }
-        public String CreatedDateTime { get; set; }
-        public String UpdatedBy { get; set; }
-        public String UpdatedDateTime { get; set; }
-        public List<TrnStockTransferItem> ListPOSIntegrationTrnStockTransferItem { get; set; }
-    }
-
-    // ====================
-    // Stock Transfer Items
-    // ====================
-    public class TrnStockTransferItem
-    {
-        public Int32 STId { get; set; }
-        public String ItemCode { get; set; }
-        public String Item { get; set; }
-        public String InventoryCode { get; set; }
-        public String Particulars { get; set; }
-        public String Unit { get; set; }
-        public Decimal Quantity { get; set; }
-        public Decimal Cost { get; set; }
-        public Decimal Amount { get; set; }
-        public String BaseUnit { get; set; }
-        public Decimal BaseQuantity { get; set; }
-        public Decimal BaseCost { get; set; }
-    }
-
-    // =========
-    // Stock Out 
-    // =========
-    public class TrnStockOut
-    {
-        public String BranchCode { get; set; }
-        public String Branch { get; set; }
-        public String OTNumber { get; set; }
-        public String OTDate { get; set; }
-        public String Particulars { get; set; }
-        public String ManualOTNumber { get; set; }
-        public String PreparedBy { get; set; }
-        public String CheckedBy { get; set; }
-        public String ApprovedBy { get; set; }
-        public Boolean IsLocked { get; set; }
-        public String CreatedBy { get; set; }
-        public String CreatedDateTime { get; set; }
-        public String UpdatedBy { get; set; }
-        public String UpdatedDateTime { get; set; }
-        public List<TrnStockOutItem> ListPOSIntegrationTrnStockOutItem { get; set; }
-    }
-
-    // ===============
-    // Stock Out Items 
-    // ===============
-    public class TrnStockOutItem
-    {
-        public Int32 OTId { get; set; }
-        public String ItemCode { get; set; }
-        public String Item { get; set; }
-        public String Unit { get; set; }
-        public Decimal Quantity { get; set; }
-        public Decimal Cost { get; set; }
-        public Decimal Amount { get; set; }
-        public String BaseUnit { get; set; }
-        public Decimal BaseQuantity { get; set; }
-        public Decimal BaseCost { get; set; }
-    }
-
-    // =======
-    // Program
-    // =======
     class Program
     {
         // =============
@@ -142,20 +22,36 @@ namespace POSIntegrator
         private static POSdb2.POSdb2DataContext posData2 = new POSdb2.POSdb2DataContext();
         private static POSdb3.POSdb3DataContext posData3 = new POSdb3.POSdb3DataContext();
 
+        // ===================
+        // Fill Leading Zeroes
+        // ===================
+        public static String FillLeadingZeroes(Int32 number, Int32 length)
+        {
+            var result = number.ToString();
+            var pad = length - result.Length;
+            while (pad > 0)
+            {
+                result = '0' + result;
+                pad--;
+            }
+
+            return result;
+        }
+
         // ===============
         // Send Json Files
         // ===============
-        public static void SendSIJsonFiles(string jsonPath, string apiUrlHost, string database)
+        public static void SendSIJsonFiles(String jsonPath, String apiUrlHost, String database)
         {
             try
             {
-                List<string> files = new List<string>(Directory.EnumerateFiles(jsonPath));
+                List<String> files = new List<String>(Directory.EnumerateFiles(jsonPath));
                 foreach (var file in files)
                 {
                     // ==============
                     // Read json file
                     // ==============
-                    string json;
+                    String json;
                     using (StreamReader r = new StreamReader(file))
                     {
                         json = r.ReadToEnd();
@@ -170,7 +66,7 @@ namespace POSIntegrator
                     using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
                     {
                         var json_serializer = new JavaScriptSerializer();
-                        Collection c = json_serializer.Deserialize<Collection>(json);
+                        TrnCollection c = json_serializer.Deserialize<TrnCollection>(json);
                         streamWriter.Write(new JavaScriptSerializer().Serialize(c));
                     }
                     var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
@@ -183,10 +79,10 @@ namespace POSIntegrator
                         var result = streamReader.ReadToEnd();
 
                         var json_serializer = new JavaScriptSerializer();
-                        Collection c = json_serializer.Deserialize<Collection>(json);
+                        TrnCollection c = json_serializer.Deserialize<TrnCollection>(json);
 
                         Console.WriteLine("Collection Number " + c.DocumentReference + " was successfully sent!");
-                        Console.WriteLine("Post Code: " + result);
+                        Console.WriteLine("Post Code: " + result.Replace("\"", ""));
 
                         if (database.Equals("1"))
                         {
@@ -249,26 +145,10 @@ namespace POSIntegrator
             }
         }
 
-        // ===================
-        // Fill Leading Zeroes
-        // ===================
-        public static String FillLeadingZeroes(Int32 number, Int32 length)
-        {
-            var result = number.ToString();
-            var pad = length - result.Length;
-            while (pad > 0)
-            {
-                result = '0' + result;
-                pad--;
-            }
-
-            return result;
-        }
-
         // =======================
         // GET Stock Transfer - IN
         // =======================
-        public static void GetStockTransferIN(string apiUrlHost, string stockTransferDate, string toBranchCode)
+        public static void GetStockTransferIN(String apiUrlHost, String stockTransferDate, String toBranchCode)
         {
             try
             {
@@ -327,11 +207,11 @@ namespace POSIntegrator
                             ListPOSIntegrationTrnStockTransferItem = stockTransferList.ListPOSIntegrationTrnStockTransferItem.ToList()
                         };
 
-                        string jsonPath = "d:/innosoft/json/IN";
-                        string fileName = "ST-" + stockTransferList.BranchCode + "-" + stockTransferList.STNumber;
+                        String jsonPath = "d:/innosoft/json/IN";
+                        String fileName = "ST-" + stockTransferList.BranchCode + "-" + stockTransferList.STNumber;
 
-                        string json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(stockTransferData);
-                        string jsonFileName = jsonPath + "\\" + fileName + ".json";
+                        String json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(stockTransferData);
+                        String jsonFileName = jsonPath + "\\" + fileName + ".json";
                         File.WriteAllText(jsonFileName, json);
 
                         var stockIn = from d in posData1.TrnStockIns
@@ -363,14 +243,14 @@ namespace POSIntegrator
         {
             try
             {
-                string jsonPath = "d:/innosoft/json/IN";
-                List<string> files = new List<string>(Directory.EnumerateFiles(jsonPath));
+                String jsonPath = "d:/innosoft/json/IN";
+                List<String> files = new List<String>(Directory.EnumerateFiles(jsonPath));
                 foreach (var file in files)
                 {
                     // ==============
                     // Read json file
                     // ==============
-                    string json;
+                    String json;
                     using (StreamReader r = new StreamReader(file))
                     {
                         json = r.ReadToEnd();
@@ -379,7 +259,7 @@ namespace POSIntegrator
                     var json_serializer = new JavaScriptSerializer();
                     TrnStockTransfer st = json_serializer.Deserialize<TrnStockTransfer>(json);
 
-                    string fileName = "ST-" + st.BranchCode + "-" + st.STNumber;
+                    String fileName = "ST-" + st.BranchCode + "-" + st.STNumber;
                     var stockIn = from d in posData1.TrnStockIns
                                   where d.Remarks.Equals(fileName)
                                   select d;
@@ -395,7 +275,7 @@ namespace POSIntegrator
                         if (lastStockInNumber.Any())
                         {
                             var stockInNumberSplitStrings = lastStockInNumber.FirstOrDefault().StockInNumber;
-                            int secondIndex = stockInNumberSplitStrings.IndexOf('-', stockInNumberSplitStrings.IndexOf('-'));
+                            Int32 secondIndex = stockInNumberSplitStrings.IndexOf('-', stockInNumberSplitStrings.IndexOf('-'));
                             var stockInNumberSplitStringValue = stockInNumberSplitStrings.Substring(secondIndex + 1);
                             var stockInNumber = Convert.ToInt32(stockInNumberSplitStringValue) + 000001;
                             stockInNumberResult = defaultPeriod.FirstOrDefault().Period + "-" + FillLeadingZeroes(stockInNumber, 6);
@@ -487,7 +367,7 @@ namespace POSIntegrator
         // =======================
         // GET Stock Transfer - OT
         // =======================
-        public static void GetStockTransferOT(string apiUrlHost, string stockTransferDate, string fromBranchCode)
+        public static void GetStockTransferOT(String apiUrlHost, String stockTransferDate, String fromBranchCode)
         {
             try
             {
@@ -546,11 +426,11 @@ namespace POSIntegrator
                             ListPOSIntegrationTrnStockTransferItem = stockTransferList.ListPOSIntegrationTrnStockTransferItem.ToList()
                         };
 
-                        string jsonPath = "d:/innosoft/json/OT";
-                        string fileName = "ST-" + stockTransferList.BranchCode + "-" + stockTransferList.STNumber;
+                        String jsonPath = "d:/innosoft/json/OT";
+                        String fileName = "ST-" + stockTransferList.BranchCode + "-" + stockTransferList.STNumber;
 
-                        string json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(stockTransferData);
-                        string jsonFileName = jsonPath + "\\" + fileName + ".json";
+                        String json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(stockTransferData);
+                        String jsonFileName = jsonPath + "\\" + fileName + ".json";
                         File.WriteAllText(jsonFileName, json);
 
                         var stockOuts = from d in posData1.TrnStockOuts
@@ -582,14 +462,14 @@ namespace POSIntegrator
         {
             try
             {
-                string jsonPath = "d:/innosoft/json/OT";
-                List<string> files = new List<string>(Directory.EnumerateFiles(jsonPath));
+                String jsonPath = "d:/innosoft/json/OT";
+                List<String> files = new List<String>(Directory.EnumerateFiles(jsonPath));
                 foreach (var file in files)
                 {
                     // ==============
                     // Read json file
                     // ==============
-                    string json;
+                    String json;
                     using (StreamReader r = new StreamReader(file))
                     {
                         json = r.ReadToEnd();
@@ -598,7 +478,7 @@ namespace POSIntegrator
                     var json_serializer = new JavaScriptSerializer();
                     TrnStockTransfer st = json_serializer.Deserialize<TrnStockTransfer>(json);
 
-                    string fileName = "ST-" + st.BranchCode + "-" + st.STNumber;
+                    String fileName = "ST-" + st.BranchCode + "-" + st.STNumber;
                     var stockOut = from d in posData1.TrnStockOuts
                                    where d.Remarks.Equals(fileName)
                                    select d;
@@ -614,7 +494,7 @@ namespace POSIntegrator
                         if (lastStockOutNumber.Any())
                         {
                             var stockOutNumberSplitStrings = lastStockOutNumber.FirstOrDefault().StockOutNumber;
-                            int secondIndex = stockOutNumberSplitStrings.IndexOf('-', stockOutNumberSplitStrings.IndexOf('-'));
+                            Int32 secondIndex = stockOutNumberSplitStrings.IndexOf('-', stockOutNumberSplitStrings.IndexOf('-'));
                             var stockOutNumberSplitStringValue = stockOutNumberSplitStrings.Substring(secondIndex + 1);
                             var stockOutNumber = Convert.ToInt32(stockOutNumberSplitStringValue) + 000001;
                             stockOutNumberResult = defaultPeriod.FirstOrDefault().Period + "-" + FillLeadingZeroes(stockOutNumber, 6);
@@ -705,7 +585,7 @@ namespace POSIntegrator
         // =============
         // GET Stock Out
         // =============
-        public static void GetStockOut(string apiUrlHost, string stockOutDate, string branchCode)
+        public static void GetStockOut(String apiUrlHost, String stockOutDate, String branchCode)
         {
             try
             {
@@ -759,11 +639,11 @@ namespace POSIntegrator
                             ListPOSIntegrationTrnStockOutItem = stockOutList.ListPOSIntegrationTrnStockOutItem.ToList()
                         };
 
-                        string jsonPath = "d:/innosoft/json/OT";
-                        string fileName = "OT-" + stockOutList.BranchCode + "-" + stockOutList.OTNumber;
+                        String jsonPath = "d:/innosoft/json/OT";
+                        String fileName = "OT-" + stockOutList.BranchCode + "-" + stockOutList.OTNumber;
 
-                        string json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(stockOutData);
-                        string jsonFileName = jsonPath + "\\" + fileName + ".json";
+                        String json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(stockOutData);
+                        String jsonFileName = jsonPath + "\\" + fileName + ".json";
                         File.WriteAllText(jsonFileName, json);
 
                         var stockOut = from d in posData1.TrnStockOuts
@@ -795,14 +675,14 @@ namespace POSIntegrator
         {
             try
             {
-                string jsonPath = "d:/innosoft/json/OT";
-                List<string> files = new List<string>(Directory.EnumerateFiles(jsonPath));
+                String jsonPath = "d:/innosoft/json/OT";
+                List<String> files = new List<String>(Directory.EnumerateFiles(jsonPath));
                 foreach (var file in files)
                 {
                     // ==============
                     // Read json file
                     // ==============
-                    string json;
+                    String json;
                     using (StreamReader r = new StreamReader(file))
                     {
                         json = r.ReadToEnd();
@@ -811,7 +691,7 @@ namespace POSIntegrator
                     var json_serializer = new JavaScriptSerializer();
                     TrnStockOut ot = json_serializer.Deserialize<TrnStockOut>(json);
 
-                    string fileName = "OT-" + ot.BranchCode + "-" + ot.OTNumber;
+                    String fileName = "OT-" + ot.BranchCode + "-" + ot.OTNumber;
                     var stockOut = from d in posData1.TrnStockOuts
                                    where d.Remarks.Equals(fileName)
                                    select d;
@@ -827,7 +707,7 @@ namespace POSIntegrator
                         if (lastStockOutNumber.Any())
                         {
                             var stockOutNumberSplitStrings = lastStockOutNumber.FirstOrDefault().StockOutNumber;
-                            int secondIndex = stockOutNumberSplitStrings.IndexOf('-', stockOutNumberSplitStrings.IndexOf('-'));
+                            Int32 secondIndex = stockOutNumberSplitStrings.IndexOf('-', stockOutNumberSplitStrings.IndexOf('-'));
                             var stockOutNumberSplitStringValue = stockOutNumberSplitStrings.Substring(secondIndex + 1);
                             var stockOutNumber = Convert.ToInt32(stockOutNumberSplitStringValue) + 000001;
                             stockOutNumberResult = defaultPeriod.FirstOrDefault().Period + "-" + FillLeadingZeroes(stockOutNumber, 6);
@@ -918,10 +798,10 @@ namespace POSIntegrator
         // ===========
         // Main Method
         // ===========
-        static void Main(string[] args)
+        static void Main(String[] args)
         {
-            int i = 0;
-            string apiUrlHost = "", database = "";
+            Int32 i = 0;
+            String apiUrlHost = "", database = "";
             foreach (var arg in args)
             {
                 if (i == 0) { apiUrlHost = arg; }
@@ -935,7 +815,7 @@ namespace POSIntegrator
 
             while (true)
             {
-                string jsonPath = "d:/innosoft/json/SI";
+                String jsonPath = "d:/innosoft/json/SI";
 
                 try
                 {
@@ -955,12 +835,12 @@ namespace POSIntegrator
                             {
                                 foreach (var collection in collections)
                                 {
-                                    List<CollectionLines> listCollectionLines = new List<CollectionLines>();
+                                    List<TrnCollectionLines> listCollectionLines = new List<TrnCollectionLines>();
                                     if (collection.TrnSale != null)
                                     {
                                         foreach (var salesLine in collection.TrnSale.TrnSalesLines)
                                         {
-                                            listCollectionLines.Add(new CollectionLines()
+                                            listCollectionLines.Add(new TrnCollectionLines()
                                             {
                                                 ItemManualArticleCode = salesLine.MstItem.BarCode,
                                                 Particulars = salesLine.MstItem.ItemDescription,
@@ -976,7 +856,7 @@ namespace POSIntegrator
                                             });
                                         }
 
-                                        var collectionData = new Collection()
+                                        var collectionData = new TrnCollection()
                                         {
                                             SIDate = collection.CollectionDate.ToShortDateString(),
                                             BranchCode = sysSettings.FirstOrDefault().BranchCode,
@@ -989,8 +869,8 @@ namespace POSIntegrator
                                             ListPOSIntegrationTrnSalesInvoiceItem = listCollectionLines.ToList()
                                         };
 
-                                        string json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(collectionData);
-                                        string jsonFileName = jsonPath + "\\" + collection.CollectionNumber + ".json";
+                                        String json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(collectionData);
+                                        String jsonFileName = jsonPath + "\\" + collection.CollectionNumber + ".json";
                                         File.WriteAllText(jsonFileName, json);
 
                                         Console.WriteLine("Sending Collection Number " + collection.CollectionNumber + "...");
@@ -1030,12 +910,12 @@ namespace POSIntegrator
                             {
                                 foreach (var collection in collections)
                                 {
-                                    List<CollectionLines> listCollectionLines = new List<CollectionLines>();
+                                    List<TrnCollectionLines> listCollectionLines = new List<TrnCollectionLines>();
                                     if (collection.TrnSale != null)
                                     {
                                         foreach (var salesLine in collection.TrnSale.TrnSalesLines)
                                         {
-                                            listCollectionLines.Add(new CollectionLines()
+                                            listCollectionLines.Add(new TrnCollectionLines()
                                             {
                                                 ItemManualArticleCode = salesLine.MstItem.BarCode,
                                                 Particulars = salesLine.MstItem.ItemDescription,
@@ -1051,7 +931,7 @@ namespace POSIntegrator
                                             });
                                         }
 
-                                        var collectionData = new Collection()
+                                        var collectionData = new TrnCollection()
                                         {
                                             SIDate = collection.CollectionDate.ToShortDateString(),
                                             BranchCode = sysSettings.FirstOrDefault().BranchCode,
@@ -1064,8 +944,8 @@ namespace POSIntegrator
                                             ListPOSIntegrationTrnSalesInvoiceItem = listCollectionLines.ToList()
                                         };
 
-                                        string json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(collectionData);
-                                        string jsonFileName = jsonPath + "\\" + collection.CollectionNumber + ".json";
+                                        String json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(collectionData);
+                                        String jsonFileName = jsonPath + "\\" + collection.CollectionNumber + ".json";
                                         File.WriteAllText(jsonFileName, json);
 
                                         Console.WriteLine("Sending Collection Number " + collection.CollectionNumber + "...");
@@ -1105,12 +985,12 @@ namespace POSIntegrator
                             {
                                 foreach (var collection in collections)
                                 {
-                                    List<CollectionLines> listCollectionLines = new List<CollectionLines>();
+                                    List<TrnCollectionLines> listCollectionLines = new List<TrnCollectionLines>();
                                     if (collection.TrnSale != null)
                                     {
                                         foreach (var salesLine in collection.TrnSale.TrnSalesLines)
                                         {
-                                            listCollectionLines.Add(new CollectionLines()
+                                            listCollectionLines.Add(new TrnCollectionLines()
                                             {
                                                 ItemManualArticleCode = salesLine.MstItem.BarCode,
                                                 Particulars = salesLine.MstItem.ItemDescription,
@@ -1126,7 +1006,7 @@ namespace POSIntegrator
                                             });
                                         }
 
-                                        var collectionData = new Collection()
+                                        var collectionData = new TrnCollection()
                                         {
                                             SIDate = collection.CollectionDate.ToShortDateString(),
                                             BranchCode = sysSettings.FirstOrDefault().BranchCode,
@@ -1139,8 +1019,8 @@ namespace POSIntegrator
                                             ListPOSIntegrationTrnSalesInvoiceItem = listCollectionLines.ToList()
                                         };
 
-                                        string json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(collectionData);
-                                        string jsonFileName = jsonPath + "\\" + collection.CollectionNumber + ".json";
+                                        String json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(collectionData);
+                                        String jsonFileName = jsonPath + "\\" + collection.CollectionNumber + ".json";
                                         File.WriteAllText(jsonFileName, json);
 
                                         Console.WriteLine("Sending Collection Number " + collection.CollectionNumber + "...");
