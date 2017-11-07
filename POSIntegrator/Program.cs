@@ -929,7 +929,7 @@ namespace POSIntegrator
             }
 
             Console.WriteLine("Innosoft POS Uploader");
-            Console.WriteLine("Version: 1.20170905");
+            Console.WriteLine("Version: 1.20171107");
             Console.WriteLine("=====================");
 
             while (true)
