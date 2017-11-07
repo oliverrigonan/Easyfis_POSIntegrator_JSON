@@ -145,7 +145,7 @@ namespace POSIntegrator
         // ===============
         // Send Json Files
         // ===============
-        public static void SendJsonFiles(string jsonPath, string apiUrl, string database)
+        public static void SendSIJsonFiles(string jsonPath, string apiUrlHost, string database)
         {
             try
             {
@@ -164,7 +164,7 @@ namespace POSIntegrator
                     // ===================
                     // Send json to server
                     // ===================
-                    var httpWebRequest = (HttpWebRequest)WebRequest.Create(apiUrl);
+                    var httpWebRequest = (HttpWebRequest)WebRequest.Create("http://" + apiUrlHost + "/api/add/POSIntegration/salesInvoice");
                     httpWebRequest.ContentType = "application/json";
                     httpWebRequest.Method = "POST";
                     using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
@@ -181,10 +181,12 @@ namespace POSIntegrator
                     using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
                     {
                         var result = streamReader.ReadToEnd();
-                        Console.WriteLine(result);
 
                         var json_serializer = new JavaScriptSerializer();
                         Collection c = json_serializer.Deserialize<Collection>(json);
+
+                        Console.WriteLine("Collection Number " + c.DocumentReference + " was successfully sent!");
+                        Console.WriteLine("Post Code: " + result);
 
                         if (database.Equals("1"))
                         {
@@ -266,11 +268,11 @@ namespace POSIntegrator
         // =======================
         // GET Stock Transfer - IN
         // =======================
-        public static void GetStockTransferIN(string stockTransferDate, string toBranchCode)
+        public static void GetStockTransferIN(string apiUrlHost, string stockTransferDate, string toBranchCode)
         {
             try
             {
-                var httpWebRequest = (HttpWebRequest)WebRequest.Create("http://localhost:2651/api/get/POSIntegration/stockTransferItems/IN/" + stockTransferDate + "/" + toBranchCode);
+                var httpWebRequest = (HttpWebRequest)WebRequest.Create("http://" + apiUrlHost + "/api/get/POSIntegration/stockTransferItems/IN/" + stockTransferDate + "/" + toBranchCode);
                 httpWebRequest.Method = "GET";
                 httpWebRequest.Accept = "application/json";
 
@@ -485,11 +487,11 @@ namespace POSIntegrator
         // =======================
         // GET Stock Transfer - OT
         // =======================
-        public static void GetStockTransferOT(string stockTransferDate, string fromBranchCode)
+        public static void GetStockTransferOT(string apiUrlHost, string stockTransferDate, string fromBranchCode)
         {
             try
             {
-                var httpWebRequest = (HttpWebRequest)WebRequest.Create("http://localhost:2651/api/get/POSIntegration/stockTransferItems/OT/" + stockTransferDate + "/" + fromBranchCode);
+                var httpWebRequest = (HttpWebRequest)WebRequest.Create("http://" + apiUrlHost + "/api/get/POSIntegration/stockTransferItems/OT/" + stockTransferDate + "/" + fromBranchCode);
                 httpWebRequest.Method = "GET";
                 httpWebRequest.Accept = "application/json";
 
@@ -703,11 +705,11 @@ namespace POSIntegrator
         // =============
         // GET Stock Out
         // =============
-        public static void GetStockOut(string stockOutDate, string branchCode)
+        public static void GetStockOut(string apiUrlHost, string stockOutDate, string branchCode)
         {
             try
             {
-                var httpWebRequest = (HttpWebRequest)WebRequest.Create("http://localhost:2651/api/get/POSIntegration/stockOut/" + stockOutDate + "/" + branchCode);
+                var httpWebRequest = (HttpWebRequest)WebRequest.Create("http://" + apiUrlHost + "/api/get/POSIntegration/stockOut/" + stockOutDate + "/" + branchCode);
                 httpWebRequest.Method = "GET";
                 httpWebRequest.Accept = "application/json";
 
@@ -919,12 +921,11 @@ namespace POSIntegrator
         static void Main(string[] args)
         {
             int i = 0;
-            string jsonPath = "", apiUrl = "", database = "";
+            string apiUrlHost = "", database = "";
             foreach (var arg in args)
             {
-                if (i == 0) { jsonPath = arg; }
-                else if (i == 1) { apiUrl = arg; }
-                else if (i == 2) { database = arg; }
+                if (i == 0) { apiUrlHost = arg; }
+                else if (i == 1) { database = arg; }
                 i++;
             }
 
@@ -934,6 +935,8 @@ namespace POSIntegrator
 
             while (true)
             {
+                string jsonPath = "d:/innosoft/json/SI";
+
                 try
                 {
                     if (database.Equals("1"))
@@ -990,7 +993,7 @@ namespace POSIntegrator
                                         string jsonFileName = jsonPath + "\\" + collection.CollectionNumber + ".json";
                                         File.WriteAllText(jsonFileName, json);
 
-                                        Console.WriteLine("Saving " + collection.CollectionNumber + "...");
+                                        Console.WriteLine("Sending Collection Number " + collection.CollectionNumber + "...");
                                     }
                                     else
                                     {
@@ -1006,9 +1009,9 @@ namespace POSIntegrator
                             DateTime dateTimeToday = DateTime.Today;
                             var currentDate = dateTimeToday.ToString("MM-dd-yyyy", CultureInfo.InvariantCulture);
                             var branchCode = sysSettings.FirstOrDefault().BranchCode;
-                            GetStockTransferIN(currentDate, branchCode);
-                            GetStockTransferOT(currentDate, branchCode);
-                            GetStockOut(currentDate, branchCode);
+                            GetStockTransferIN(apiUrlHost, currentDate, branchCode);
+                            GetStockTransferOT(apiUrlHost, currentDate, branchCode);
+                            GetStockOut(apiUrlHost, currentDate, branchCode);
                         }
                     }
                     else if (database.Equals("2"))
@@ -1065,7 +1068,7 @@ namespace POSIntegrator
                                         string jsonFileName = jsonPath + "\\" + collection.CollectionNumber + ".json";
                                         File.WriteAllText(jsonFileName, json);
 
-                                        Console.WriteLine("Saving " + collection.CollectionNumber + "...");
+                                        Console.WriteLine("Sending Collection Number " + collection.CollectionNumber + "...");
                                     }
                                     else
                                     {
@@ -1081,9 +1084,9 @@ namespace POSIntegrator
                             DateTime dateTimeToday = DateTime.Today;
                             var currentDate = dateTimeToday.ToString("MM-dd-yyyy", CultureInfo.InvariantCulture);
                             var branchCode = sysSettings.FirstOrDefault().BranchCode;
-                            GetStockTransferIN(currentDate, branchCode);
-                            GetStockTransferOT(currentDate, branchCode);
-                            GetStockOut(currentDate, branchCode);
+                            GetStockTransferIN(apiUrlHost, currentDate, branchCode);
+                            GetStockTransferOT(apiUrlHost, currentDate, branchCode);
+                            GetStockOut(apiUrlHost, currentDate, branchCode);
                         }
                     }
                     else if (database.Equals("3"))
@@ -1140,7 +1143,7 @@ namespace POSIntegrator
                                         string jsonFileName = jsonPath + "\\" + collection.CollectionNumber + ".json";
                                         File.WriteAllText(jsonFileName, json);
 
-                                        Console.WriteLine("Saving " + collection.CollectionNumber + "...");
+                                        Console.WriteLine("Sending Collection Number " + collection.CollectionNumber + "...");
                                     }
                                     else
                                     {
@@ -1156,9 +1159,9 @@ namespace POSIntegrator
                             DateTime dateTimeToday = DateTime.Today;
                             var currentDate = dateTimeToday.ToString("MM-dd-yyyy", CultureInfo.InvariantCulture);
                             var branchCode = sysSettings.FirstOrDefault().BranchCode;
-                            GetStockTransferIN(currentDate, branchCode);
-                            GetStockTransferOT(currentDate, branchCode);
-                            GetStockOut(currentDate, branchCode);
+                            GetStockTransferIN(apiUrlHost, currentDate, branchCode);
+                            GetStockTransferOT(apiUrlHost, currentDate, branchCode);
+                            GetStockOut(apiUrlHost, currentDate, branchCode);
                         }
                     }
                     else
@@ -1176,7 +1179,7 @@ namespace POSIntegrator
                 // ===============
                 // Send Json Files
                 // ===============
-                SendJsonFiles(jsonPath, apiUrl, database);
+                SendSIJsonFiles(jsonPath, apiUrlHost, database);
             }
         }
     }
