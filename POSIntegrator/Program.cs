@@ -148,7 +148,7 @@ namespace POSIntegrator
         // =======================
         // GET Stock Transfer - IN
         // =======================
-        public static void GetStockTransferIN(String apiUrlHost, String stockTransferDate, String toBranchCode)
+        public static void GetStockTransferIN(String database, String apiUrlHost, String stockTransferDate, String toBranchCode)
         {
             try
             {
@@ -214,19 +214,61 @@ namespace POSIntegrator
                         String jsonFileName = jsonPath + "\\" + fileName + ".json";
                         File.WriteAllText(jsonFileName, json);
 
-                        var stockIn = from d in posData1.TrnStockIns
-                                      where d.Remarks.Equals(fileName)
-                                      select d;
-
-                        if (!stockIn.Any())
+                        if (database.Equals("1"))
                         {
-                            Console.WriteLine("Saving Stock Transfer (IN) - " + fileName + "...");
-                            InsertStockTransferIN();
+                            var stockIn = from d in posData1.TrnStockIns
+                                          where d.Remarks.Equals(fileName)
+                                          select d;
+
+                            if (!stockIn.Any())
+                            {
+                                Console.WriteLine("Saving Stock Transfer (IN) - " + fileName + "...");
+                                InsertStockTransferIN(database);
+                            }
+                            else
+                            {
+                                File.Delete(jsonFileName);
+                            }
                         }
                         else
                         {
-                            File.Delete(jsonFileName);
+                            if (database.Equals("2"))
+                            {
+                                var stockIn = from d in posData2.TrnStockIns
+                                              where d.Remarks.Equals(fileName)
+                                              select d;
+
+                                if (!stockIn.Any())
+                                {
+                                    Console.WriteLine("Saving Stock Transfer (IN) - " + fileName + "...");
+                                    InsertStockTransferIN(database);
+                                }
+                                else
+                                {
+                                    File.Delete(jsonFileName);
+                                }
+                            }
+                            else
+                            {
+                                if (database.Equals("3"))
+                                {
+                                    var stockIn = from d in posData3.TrnStockIns
+                                                  where d.Remarks.Equals(fileName)
+                                                  select d;
+
+                                    if (!stockIn.Any())
+                                    {
+                                        Console.WriteLine("Saving Stock Transfer (IN) - " + fileName + "...");
+                                        InsertStockTransferIN(database);
+                                    }
+                                    else
+                                    {
+                                        File.Delete(jsonFileName);
+                                    }
+                                }
+                            }
                         }
+
                     }
                 }
             }
@@ -239,7 +281,7 @@ namespace POSIntegrator
         // ==========================
         // INSERT Stock Transfer - IN 
         // ==========================
-        public static void InsertStockTransferIN()
+        public static void InsertStockTransferIN(String database)
         {
             try
             {
@@ -259,99 +301,308 @@ namespace POSIntegrator
                     var json_serializer = new JavaScriptSerializer();
                     TrnStockTransfer st = json_serializer.Deserialize<TrnStockTransfer>(json);
 
-                    String fileName = "ST-" + st.BranchCode + "-" + st.STNumber;
-                    var stockIn = from d in posData1.TrnStockIns
-                                  where d.Remarks.Equals(fileName)
-                                  select d;
-
-                    if (!stockIn.Any())
+                    if (database.Equals("1"))
                     {
-                        var defaultPeriod = from d in posData1.MstPeriods select d;
-                        var defaultSettings = from d in posData1.SysSettings select d;
+                        String fileName = "ST-" + st.BranchCode + "-" + st.STNumber;
+                        var stockIn = from d in posData1.TrnStockIns
+                                      where d.Remarks.Equals(fileName)
+                                      select d;
 
-                        var lastStockInNumber = from d in posData1.TrnStockIns.OrderByDescending(d => d.Id) select d;
-                        var stockInNumberResult = defaultPeriod.FirstOrDefault().Period + "-000001";
-
-                        if (lastStockInNumber.Any())
+                        if (!stockIn.Any())
                         {
-                            var stockInNumberSplitStrings = lastStockInNumber.FirstOrDefault().StockInNumber;
-                            Int32 secondIndex = stockInNumberSplitStrings.IndexOf('-', stockInNumberSplitStrings.IndexOf('-'));
-                            var stockInNumberSplitStringValue = stockInNumberSplitStrings.Substring(secondIndex + 1);
-                            var stockInNumber = Convert.ToInt32(stockInNumberSplitStringValue) + 000001;
-                            stockInNumberResult = defaultPeriod.FirstOrDefault().Period + "-" + FillLeadingZeroes(stockInNumber, 6);
-                        }
+                            var defaultPeriod = from d in posData1.MstPeriods select d;
+                            var defaultSettings = from d in posData1.SysSettings select d;
 
-                        POSdb1.TrnStockIn newStockIn = new POSdb1.TrnStockIn
-                        {
-                            PeriodId = defaultPeriod.FirstOrDefault().Id,
-                            StockInDate = Convert.ToDateTime(st.STDate),
-                            StockInNumber = stockInNumberResult,
-                            SupplierId = defaultSettings.FirstOrDefault().PostSupplierId,
-                            Remarks = fileName,
-                            IsReturn = false,
-                            CollectionId = null,
-                            PurchaseOrderId = null,
-                            PreparedBy = defaultSettings.FirstOrDefault().PostUserId,
-                            CheckedBy = defaultSettings.FirstOrDefault().PostUserId,
-                            ApprovedBy = defaultSettings.FirstOrDefault().PostUserId,
-                            IsLocked = 1,
-                            EntryUserId = defaultSettings.FirstOrDefault().PostUserId,
-                            EntryDateTime = DateTime.Now,
-                            UpdateUserId = defaultSettings.FirstOrDefault().PostUserId,
-                            UpdateDateTime = DateTime.Now,
-                            SalesId = null
-                        };
+                            var lastStockInNumber = from d in posData1.TrnStockIns.OrderByDescending(d => d.Id) select d;
+                            var stockInNumberResult = defaultPeriod.FirstOrDefault().Period + "-000001";
 
-                        posData1.TrnStockIns.InsertOnSubmit(newStockIn);
-                        posData1.SubmitChanges();
-
-                        foreach (var item in st.ListPOSIntegrationTrnStockTransferItem.ToList())
-                        {
-                            var items = from d in posData1.MstItems
-                                        where d.BarCode.Equals(item.ItemCode)
-                                        select d;
-
-                            if (items.Any())
+                            if (lastStockInNumber.Any())
                             {
-                                var units = from d in posData1.MstUnits
-                                            where d.Unit.Equals(item.Unit)
+                                var stockInNumberSplitStrings = lastStockInNumber.FirstOrDefault().StockInNumber;
+                                Int32 secondIndex = stockInNumberSplitStrings.IndexOf('-', stockInNumberSplitStrings.IndexOf('-'));
+                                var stockInNumberSplitStringValue = stockInNumberSplitStrings.Substring(secondIndex + 1);
+                                var stockInNumber = Convert.ToInt32(stockInNumberSplitStringValue) + 000001;
+                                stockInNumberResult = defaultPeriod.FirstOrDefault().Period + "-" + FillLeadingZeroes(stockInNumber, 6);
+                            }
+
+                            POSdb1.TrnStockIn newStockIn = new POSdb1.TrnStockIn
+                            {
+                                PeriodId = defaultPeriod.FirstOrDefault().Id,
+                                StockInDate = Convert.ToDateTime(st.STDate),
+                                StockInNumber = stockInNumberResult,
+                                SupplierId = defaultSettings.FirstOrDefault().PostSupplierId,
+                                Remarks = fileName,
+                                IsReturn = false,
+                                CollectionId = null,
+                                PurchaseOrderId = null,
+                                PreparedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                CheckedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                ApprovedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                IsLocked = 1,
+                                EntryUserId = defaultSettings.FirstOrDefault().PostUserId,
+                                EntryDateTime = DateTime.Now,
+                                UpdateUserId = defaultSettings.FirstOrDefault().PostUserId,
+                                UpdateDateTime = DateTime.Now,
+                                SalesId = null
+                            };
+
+                            posData1.TrnStockIns.InsertOnSubmit(newStockIn);
+                            posData1.SubmitChanges();
+
+                            foreach (var item in st.ListPOSIntegrationTrnStockTransferItem.ToList())
+                            {
+                                var items = from d in posData1.MstItems
+                                            where d.BarCode.Equals(item.ItemCode)
                                             select d;
 
-                                if (units.Any())
+                                if (items.Any())
                                 {
-                                    POSdb1.TrnStockInLine newStockInLine = new POSdb1.TrnStockInLine
+                                    var units = from d in posData1.MstUnits
+                                                where d.Unit.Equals(item.Unit)
+                                                select d;
+
+                                    if (units.Any())
                                     {
-                                        StockInId = newStockIn.Id,
-                                        ItemId = items.FirstOrDefault().Id,
-                                        UnitId = units.FirstOrDefault().Id,
-                                        Quantity = item.Quantity,
-                                        Cost = item.Cost,
-                                        Amount = item.Amount,
-                                        ExpiryDate = items.FirstOrDefault().ExpiryDate,
-                                        LotNumber = items.FirstOrDefault().LotNumber,
-                                        AssetAccountId = items.FirstOrDefault().AssetAccountId,
-                                        Price = items.FirstOrDefault().Price
-                                    };
+                                        POSdb1.TrnStockInLine newStockInLine = new POSdb1.TrnStockInLine
+                                        {
+                                            StockInId = newStockIn.Id,
+                                            ItemId = items.FirstOrDefault().Id,
+                                            UnitId = units.FirstOrDefault().Id,
+                                            Quantity = item.Quantity,
+                                            Cost = item.Cost,
+                                            Amount = item.Amount,
+                                            ExpiryDate = items.FirstOrDefault().ExpiryDate,
+                                            LotNumber = items.FirstOrDefault().LotNumber,
+                                            AssetAccountId = items.FirstOrDefault().AssetAccountId,
+                                            Price = items.FirstOrDefault().Price
+                                        };
 
-                                    posData1.TrnStockInLines.InsertOnSubmit(newStockInLine);
+                                        posData1.TrnStockInLines.InsertOnSubmit(newStockInLine);
 
-                                    var currentItem = from d in posData1.MstItems
-                                                      where d.Id == newStockInLine.ItemId
-                                                      select d;
+                                        var currentItem = from d in posData1.MstItems
+                                                          where d.Id == newStockInLine.ItemId
+                                                          select d;
 
-                                    if (currentItem.Any())
+                                        if (currentItem.Any())
+                                        {
+                                            Decimal currentOnHandQuantity = currentItem.FirstOrDefault().OnhandQuantity;
+                                            Decimal totalQuantity = currentOnHandQuantity + Convert.ToDecimal(item.Quantity);
+
+                                            var updateItem = currentItem.FirstOrDefault();
+                                            updateItem.OnhandQuantity = totalQuantity;
+                                        }
+
+                                        posData1.SubmitChanges();
+                                        Console.WriteLine("Stock Transfer (IN) - " + fileName + " was successfully saved!");
+
+                                        File.Delete(file);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (database.Equals("2"))
+                        {
+                            String fileName = "ST-" + st.BranchCode + "-" + st.STNumber;
+                            var stockIn = from d in posData2.TrnStockIns
+                                          where d.Remarks.Equals(fileName)
+                                          select d;
+
+                            if (!stockIn.Any())
+                            {
+                                var defaultPeriod = from d in posData2.MstPeriods select d;
+                                var defaultSettings = from d in posData2.SysSettings select d;
+
+                                var lastStockInNumber = from d in posData2.TrnStockIns.OrderByDescending(d => d.Id) select d;
+                                var stockInNumberResult = defaultPeriod.FirstOrDefault().Period + "-000001";
+
+                                if (lastStockInNumber.Any())
+                                {
+                                    var stockInNumberSplitStrings = lastStockInNumber.FirstOrDefault().StockInNumber;
+                                    Int32 secondIndex = stockInNumberSplitStrings.IndexOf('-', stockInNumberSplitStrings.IndexOf('-'));
+                                    var stockInNumberSplitStringValue = stockInNumberSplitStrings.Substring(secondIndex + 1);
+                                    var stockInNumber = Convert.ToInt32(stockInNumberSplitStringValue) + 000001;
+                                    stockInNumberResult = defaultPeriod.FirstOrDefault().Period + "-" + FillLeadingZeroes(stockInNumber, 6);
+                                }
+
+                                POSdb2.TrnStockIn newStockIn = new POSdb2.TrnStockIn
+                                {
+                                    PeriodId = defaultPeriod.FirstOrDefault().Id,
+                                    StockInDate = Convert.ToDateTime(st.STDate),
+                                    StockInNumber = stockInNumberResult,
+                                    SupplierId = defaultSettings.FirstOrDefault().PostSupplierId,
+                                    Remarks = fileName,
+                                    IsReturn = false,
+                                    CollectionId = null,
+                                    PurchaseOrderId = null,
+                                    PreparedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                    CheckedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                    ApprovedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                    IsLocked = 1,
+                                    EntryUserId = defaultSettings.FirstOrDefault().PostUserId,
+                                    EntryDateTime = DateTime.Now,
+                                    UpdateUserId = defaultSettings.FirstOrDefault().PostUserId,
+                                    UpdateDateTime = DateTime.Now,
+                                    SalesId = null
+                                };
+
+                                posData2.TrnStockIns.InsertOnSubmit(newStockIn);
+                                posData2.SubmitChanges();
+
+                                foreach (var item in st.ListPOSIntegrationTrnStockTransferItem.ToList())
+                                {
+                                    var items = from d in posData2.MstItems
+                                                where d.BarCode.Equals(item.ItemCode)
+                                                select d;
+
+                                    if (items.Any())
                                     {
-                                        Decimal currentOnHandQuantity = currentItem.FirstOrDefault().OnhandQuantity;
-                                        Decimal totalQuantity = currentOnHandQuantity + Convert.ToDecimal(item.Quantity);
+                                        var units = from d in posData2.MstUnits
+                                                    where d.Unit.Equals(item.Unit)
+                                                    select d;
 
-                                        var updateItem = currentItem.FirstOrDefault();
-                                        updateItem.OnhandQuantity = totalQuantity;
+                                        if (units.Any())
+                                        {
+                                            POSdb2.TrnStockInLine newStockInLine = new POSdb2.TrnStockInLine
+                                            {
+                                                StockInId = newStockIn.Id,
+                                                ItemId = items.FirstOrDefault().Id,
+                                                UnitId = units.FirstOrDefault().Id,
+                                                Quantity = item.Quantity,
+                                                Cost = item.Cost,
+                                                Amount = item.Amount,
+                                                ExpiryDate = items.FirstOrDefault().ExpiryDate,
+                                                LotNumber = items.FirstOrDefault().LotNumber,
+                                                AssetAccountId = items.FirstOrDefault().AssetAccountId,
+                                                Price = items.FirstOrDefault().Price
+                                            };
+
+                                            posData2.TrnStockInLines.InsertOnSubmit(newStockInLine);
+
+                                            var currentItem = from d in posData2.MstItems
+                                                              where d.Id == newStockInLine.ItemId
+                                                              select d;
+
+                                            if (currentItem.Any())
+                                            {
+                                                Decimal currentOnHandQuantity = currentItem.FirstOrDefault().OnhandQuantity;
+                                                Decimal totalQuantity = currentOnHandQuantity + Convert.ToDecimal(item.Quantity);
+
+                                                var updateItem = currentItem.FirstOrDefault();
+                                                updateItem.OnhandQuantity = totalQuantity;
+                                            }
+
+                                            posData2.SubmitChanges();
+                                            Console.WriteLine("Stock Transfer (IN) - " + fileName + " was successfully saved!");
+
+                                            File.Delete(file);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (database.Equals("3"))
+                            {
+                                String fileName = "ST-" + st.BranchCode + "-" + st.STNumber;
+                                var stockIn = from d in posData3.TrnStockIns
+                                              where d.Remarks.Equals(fileName)
+                                              select d;
+
+                                if (!stockIn.Any())
+                                {
+                                    var defaultPeriod = from d in posData3.MstPeriods select d;
+                                    var defaultSettings = from d in posData3.SysSettings select d;
+
+                                    var lastStockInNumber = from d in posData3.TrnStockIns.OrderByDescending(d => d.Id) select d;
+                                    var stockInNumberResult = defaultPeriod.FirstOrDefault().Period + "-000001";
+
+                                    if (lastStockInNumber.Any())
+                                    {
+                                        var stockInNumberSplitStrings = lastStockInNumber.FirstOrDefault().StockInNumber;
+                                        Int32 secondIndex = stockInNumberSplitStrings.IndexOf('-', stockInNumberSplitStrings.IndexOf('-'));
+                                        var stockInNumberSplitStringValue = stockInNumberSplitStrings.Substring(secondIndex + 1);
+                                        var stockInNumber = Convert.ToInt32(stockInNumberSplitStringValue) + 000001;
+                                        stockInNumberResult = defaultPeriod.FirstOrDefault().Period + "-" + FillLeadingZeroes(stockInNumber, 6);
                                     }
 
-                                    posData1.SubmitChanges();
-                                    Console.WriteLine("Stock Transfer (IN) - " + fileName + " was successfully saved!");
+                                    POSdb3.TrnStockIn newStockIn = new POSdb3.TrnStockIn
+                                    {
+                                        PeriodId = defaultPeriod.FirstOrDefault().Id,
+                                        StockInDate = Convert.ToDateTime(st.STDate),
+                                        StockInNumber = stockInNumberResult,
+                                        SupplierId = defaultSettings.FirstOrDefault().PostSupplierId,
+                                        Remarks = fileName,
+                                        IsReturn = false,
+                                        CollectionId = null,
+                                        PurchaseOrderId = null,
+                                        PreparedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                        CheckedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                        ApprovedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                        IsLocked = 1,
+                                        EntryUserId = defaultSettings.FirstOrDefault().PostUserId,
+                                        EntryDateTime = DateTime.Now,
+                                        UpdateUserId = defaultSettings.FirstOrDefault().PostUserId,
+                                        UpdateDateTime = DateTime.Now,
+                                        SalesId = null
+                                    };
 
-                                    File.Delete(file);
+                                    posData3.TrnStockIns.InsertOnSubmit(newStockIn);
+                                    posData3.SubmitChanges();
+
+                                    foreach (var item in st.ListPOSIntegrationTrnStockTransferItem.ToList())
+                                    {
+                                        var items = from d in posData3.MstItems
+                                                    where d.BarCode.Equals(item.ItemCode)
+                                                    select d;
+
+                                        if (items.Any())
+                                        {
+                                            var units = from d in posData3.MstUnits
+                                                        where d.Unit.Equals(item.Unit)
+                                                        select d;
+
+                                            if (units.Any())
+                                            {
+                                                POSdb3.TrnStockInLine newStockInLine = new POSdb3.TrnStockInLine
+                                                {
+                                                    StockInId = newStockIn.Id,
+                                                    ItemId = items.FirstOrDefault().Id,
+                                                    UnitId = units.FirstOrDefault().Id,
+                                                    Quantity = item.Quantity,
+                                                    Cost = item.Cost,
+                                                    Amount = item.Amount,
+                                                    ExpiryDate = items.FirstOrDefault().ExpiryDate,
+                                                    LotNumber = items.FirstOrDefault().LotNumber,
+                                                    AssetAccountId = items.FirstOrDefault().AssetAccountId,
+                                                    Price = items.FirstOrDefault().Price
+                                                };
+
+                                                posData3.TrnStockInLines.InsertOnSubmit(newStockInLine);
+
+                                                var currentItem = from d in posData3.MstItems
+                                                                  where d.Id == newStockInLine.ItemId
+                                                                  select d;
+
+                                                if (currentItem.Any())
+                                                {
+                                                    Decimal currentOnHandQuantity = currentItem.FirstOrDefault().OnhandQuantity;
+                                                    Decimal totalQuantity = currentOnHandQuantity + Convert.ToDecimal(item.Quantity);
+
+                                                    var updateItem = currentItem.FirstOrDefault();
+                                                    updateItem.OnhandQuantity = totalQuantity;
+                                                }
+
+                                                posData3.SubmitChanges();
+                                                Console.WriteLine("Stock Transfer (IN) - " + fileName + " was successfully saved!");
+
+                                                File.Delete(file);
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -367,7 +618,7 @@ namespace POSIntegrator
         // =======================
         // GET Stock Transfer - OT
         // =======================
-        public static void GetStockTransferOT(String apiUrlHost, String stockTransferDate, String fromBranchCode)
+        public static void GetStockTransferOT(String database, String apiUrlHost, String stockTransferDate, String fromBranchCode)
         {
             try
             {
@@ -433,18 +684,59 @@ namespace POSIntegrator
                         String jsonFileName = jsonPath + "\\" + fileName + ".json";
                         File.WriteAllText(jsonFileName, json);
 
-                        var stockOuts = from d in posData1.TrnStockOuts
-                                        where d.Remarks.Equals(fileName)
-                                        select d;
-
-                        if (!stockOuts.Any())
+                        if (database.Equals("1"))
                         {
-                            Console.WriteLine("Saving Stock Transfer (OT) - " + fileName + "...");
-                            InsertStockTransferOT();
+                            var stockOuts = from d in posData1.TrnStockOuts
+                                            where d.Remarks.Equals(fileName)
+                                            select d;
+
+                            if (!stockOuts.Any())
+                            {
+                                Console.WriteLine("Saving Stock Transfer (OT) - " + fileName + "...");
+                                InsertStockTransferOT(database);
+                            }
+                            else
+                            {
+                                File.Delete(jsonFileName);
+                            }
                         }
                         else
                         {
-                            File.Delete(jsonFileName);
+                            if (database.Equals("2"))
+                            {
+                                var stockOuts = from d in posData2.TrnStockOuts
+                                                where d.Remarks.Equals(fileName)
+                                                select d;
+
+                                if (!stockOuts.Any())
+                                {
+                                    Console.WriteLine("Saving Stock Transfer (OT) - " + fileName + "...");
+                                    InsertStockTransferOT(database);
+                                }
+                                else
+                                {
+                                    File.Delete(jsonFileName);
+                                }
+                            }
+                            else
+                            {
+                                if (database.Equals("3"))
+                                {
+                                    var stockOuts = from d in posData3.TrnStockOuts
+                                                    where d.Remarks.Equals(fileName)
+                                                    select d;
+
+                                    if (!stockOuts.Any())
+                                    {
+                                        Console.WriteLine("Saving Stock Transfer (OT) - " + fileName + "...");
+                                        InsertStockTransferOT(database);
+                                    }
+                                    else
+                                    {
+                                        File.Delete(jsonFileName);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -458,7 +750,7 @@ namespace POSIntegrator
         // ==========================
         // INSERT Stock Transfer - OT
         // ==========================
-        public static void InsertStockTransferOT()
+        public static void InsertStockTransferOT(String database)
         {
             try
             {
@@ -478,97 +770,304 @@ namespace POSIntegrator
                     var json_serializer = new JavaScriptSerializer();
                     TrnStockTransfer st = json_serializer.Deserialize<TrnStockTransfer>(json);
 
-                    String fileName = "ST-" + st.BranchCode + "-" + st.STNumber;
-                    var stockOut = from d in posData1.TrnStockOuts
-                                   where d.Remarks.Equals(fileName)
-                                   select d;
-
-                    if (!stockOut.Any())
+                    if (database.Equals("1"))
                     {
-                        var defaultPeriod = from d in posData1.MstPeriods select d;
-                        var defaultSettings = from d in posData1.SysSettings select d;
-
-                        var lastStockOutNumber = from d in posData1.TrnStockOuts.OrderByDescending(d => d.Id) select d;
-                        var stockOutNumberResult = defaultPeriod.FirstOrDefault().Period + "-000001";
-
-                        if (lastStockOutNumber.Any())
-                        {
-                            var stockOutNumberSplitStrings = lastStockOutNumber.FirstOrDefault().StockOutNumber;
-                            Int32 secondIndex = stockOutNumberSplitStrings.IndexOf('-', stockOutNumberSplitStrings.IndexOf('-'));
-                            var stockOutNumberSplitStringValue = stockOutNumberSplitStrings.Substring(secondIndex + 1);
-                            var stockOutNumber = Convert.ToInt32(stockOutNumberSplitStringValue) + 000001;
-                            stockOutNumberResult = defaultPeriod.FirstOrDefault().Period + "-" + FillLeadingZeroes(stockOutNumber, 6);
-                        }
-
-                        var accounts = from d in posData1.MstAccounts
+                        String fileName = "ST-" + st.BranchCode + "-" + st.STNumber;
+                        var stockOut = from d in posData1.TrnStockOuts
+                                       where d.Remarks.Equals(fileName)
                                        select d;
 
-                        if (accounts.Any())
+                        if (!stockOut.Any())
                         {
-                            POSdb1.TrnStockOut newStockOut = new POSdb1.TrnStockOut
+                            var defaultPeriod = from d in posData1.MstPeriods select d;
+                            var defaultSettings = from d in posData1.SysSettings select d;
+
+                            var lastStockOutNumber = from d in posData1.TrnStockOuts.OrderByDescending(d => d.Id) select d;
+                            var stockOutNumberResult = defaultPeriod.FirstOrDefault().Period + "-000001";
+
+                            if (lastStockOutNumber.Any())
                             {
-                                PeriodId = defaultPeriod.FirstOrDefault().Id,
-                                StockOutDate = Convert.ToDateTime(st.STDate),
-                                StockOutNumber = stockOutNumberResult,
-                                AccountId = accounts.FirstOrDefault().Id,
-                                Remarks = fileName,
-                                PreparedBy = defaultSettings.FirstOrDefault().PostUserId,
-                                CheckedBy = defaultSettings.FirstOrDefault().PostUserId,
-                                ApprovedBy = defaultSettings.FirstOrDefault().PostUserId,
-                                IsLocked = true,
-                                EntryUserId = defaultSettings.FirstOrDefault().PostUserId,
-                                EntryDateTime = DateTime.Now,
-                                UpdateUserId = defaultSettings.FirstOrDefault().PostUserId,
-                                UpdateDateTime = DateTime.Now,
-                            };
+                                var stockOutNumberSplitStrings = lastStockOutNumber.FirstOrDefault().StockOutNumber;
+                                Int32 secondIndex = stockOutNumberSplitStrings.IndexOf('-', stockOutNumberSplitStrings.IndexOf('-'));
+                                var stockOutNumberSplitStringValue = stockOutNumberSplitStrings.Substring(secondIndex + 1);
+                                var stockOutNumber = Convert.ToInt32(stockOutNumberSplitStringValue) + 000001;
+                                stockOutNumberResult = defaultPeriod.FirstOrDefault().Period + "-" + FillLeadingZeroes(stockOutNumber, 6);
+                            }
 
-                            posData1.TrnStockOuts.InsertOnSubmit(newStockOut);
-                            posData1.SubmitChanges();
+                            var accounts = from d in posData1.MstAccounts
+                                           select d;
 
-                            foreach (var item in st.ListPOSIntegrationTrnStockTransferItem.ToList())
+                            if (accounts.Any())
                             {
-                                var items = from d in posData1.MstItems
-                                            where d.BarCode.Equals(item.ItemCode)
-                                            select d;
-
-                                if (items.Any())
+                                POSdb1.TrnStockOut newStockOut = new POSdb1.TrnStockOut
                                 {
-                                    var units = from d in posData1.MstUnits
-                                                where d.Unit.Equals(item.Unit)
+                                    PeriodId = defaultPeriod.FirstOrDefault().Id,
+                                    StockOutDate = Convert.ToDateTime(st.STDate),
+                                    StockOutNumber = stockOutNumberResult,
+                                    AccountId = accounts.FirstOrDefault().Id,
+                                    Remarks = fileName,
+                                    PreparedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                    CheckedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                    ApprovedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                    IsLocked = true,
+                                    EntryUserId = defaultSettings.FirstOrDefault().PostUserId,
+                                    EntryDateTime = DateTime.Now,
+                                    UpdateUserId = defaultSettings.FirstOrDefault().PostUserId,
+                                    UpdateDateTime = DateTime.Now,
+                                };
+
+                                posData1.TrnStockOuts.InsertOnSubmit(newStockOut);
+                                posData1.SubmitChanges();
+
+                                foreach (var item in st.ListPOSIntegrationTrnStockTransferItem.ToList())
+                                {
+                                    var items = from d in posData1.MstItems
+                                                where d.BarCode.Equals(item.ItemCode)
                                                 select d;
 
-                                    if (units.Any())
+                                    if (items.Any())
                                     {
-                                        POSdb1.TrnStockOutLine newStockOutLine = new POSdb1.TrnStockOutLine
+                                        var units = from d in posData1.MstUnits
+                                                    where d.Unit.Equals(item.Unit)
+                                                    select d;
+
+                                        if (units.Any())
                                         {
-                                            StockOutId = newStockOut.Id,
-                                            ItemId = items.FirstOrDefault().Id,
-                                            UnitId = units.FirstOrDefault().Id,
-                                            Quantity = item.Quantity,
-                                            Cost = item.Cost,
-                                            Amount = item.Amount,
-                                            AssetAccountId = items.FirstOrDefault().AssetAccountId,
+                                            POSdb1.TrnStockOutLine newStockOutLine = new POSdb1.TrnStockOutLine
+                                            {
+                                                StockOutId = newStockOut.Id,
+                                                ItemId = items.FirstOrDefault().Id,
+                                                UnitId = units.FirstOrDefault().Id,
+                                                Quantity = item.Quantity,
+                                                Cost = item.Cost,
+                                                Amount = item.Amount,
+                                                AssetAccountId = items.FirstOrDefault().AssetAccountId,
+                                            };
+
+                                            posData1.TrnStockOutLines.InsertOnSubmit(newStockOutLine);
+
+                                            var currentItem = from d in posData1.MstItems
+                                                              where d.Id == newStockOutLine.ItemId
+                                                              select d;
+
+                                            if (currentItem.Any())
+                                            {
+                                                Decimal currentOnHandQuantity = currentItem.FirstOrDefault().OnhandQuantity;
+                                                Decimal totalQuantity = currentOnHandQuantity - Convert.ToDecimal(item.Quantity);
+
+                                                var updateItem = currentItem.FirstOrDefault();
+                                                updateItem.OnhandQuantity = totalQuantity;
+                                            }
+
+                                            posData1.SubmitChanges();
+                                            Console.WriteLine("Stock Transfer (OT) - " + fileName + " was successfully saved!");
+
+                                            File.Delete(file);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (database.Equals("2"))
+                        {
+                            String fileName = "ST-" + st.BranchCode + "-" + st.STNumber;
+                            var stockOut = from d in posData2.TrnStockOuts
+                                           where d.Remarks.Equals(fileName)
+                                           select d;
+
+                            if (!stockOut.Any())
+                            {
+                                var defaultPeriod = from d in posData2.MstPeriods select d;
+                                var defaultSettings = from d in posData2.SysSettings select d;
+
+                                var lastStockOutNumber = from d in posData2.TrnStockOuts.OrderByDescending(d => d.Id) select d;
+                                var stockOutNumberResult = defaultPeriod.FirstOrDefault().Period + "-000001";
+
+                                if (lastStockOutNumber.Any())
+                                {
+                                    var stockOutNumberSplitStrings = lastStockOutNumber.FirstOrDefault().StockOutNumber;
+                                    Int32 secondIndex = stockOutNumberSplitStrings.IndexOf('-', stockOutNumberSplitStrings.IndexOf('-'));
+                                    var stockOutNumberSplitStringValue = stockOutNumberSplitStrings.Substring(secondIndex + 1);
+                                    var stockOutNumber = Convert.ToInt32(stockOutNumberSplitStringValue) + 000001;
+                                    stockOutNumberResult = defaultPeriod.FirstOrDefault().Period + "-" + FillLeadingZeroes(stockOutNumber, 6);
+                                }
+
+                                var accounts = from d in posData2.MstAccounts
+                                               select d;
+
+                                if (accounts.Any())
+                                {
+                                    POSdb2.TrnStockOut newStockOut = new POSdb2.TrnStockOut
+                                    {
+                                        PeriodId = defaultPeriod.FirstOrDefault().Id,
+                                        StockOutDate = Convert.ToDateTime(st.STDate),
+                                        StockOutNumber = stockOutNumberResult,
+                                        AccountId = accounts.FirstOrDefault().Id,
+                                        Remarks = fileName,
+                                        PreparedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                        CheckedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                        ApprovedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                        IsLocked = true,
+                                        EntryUserId = defaultSettings.FirstOrDefault().PostUserId,
+                                        EntryDateTime = DateTime.Now,
+                                        UpdateUserId = defaultSettings.FirstOrDefault().PostUserId,
+                                        UpdateDateTime = DateTime.Now,
+                                    };
+
+                                    posData2.TrnStockOuts.InsertOnSubmit(newStockOut);
+                                    posData2.SubmitChanges();
+
+                                    foreach (var item in st.ListPOSIntegrationTrnStockTransferItem.ToList())
+                                    {
+                                        var items = from d in posData2.MstItems
+                                                    where d.BarCode.Equals(item.ItemCode)
+                                                    select d;
+
+                                        if (items.Any())
+                                        {
+                                            var units = from d in posData2.MstUnits
+                                                        where d.Unit.Equals(item.Unit)
+                                                        select d;
+
+                                            if (units.Any())
+                                            {
+                                                POSdb2.TrnStockOutLine newStockOutLine = new POSdb2.TrnStockOutLine
+                                                {
+                                                    StockOutId = newStockOut.Id,
+                                                    ItemId = items.FirstOrDefault().Id,
+                                                    UnitId = units.FirstOrDefault().Id,
+                                                    Quantity = item.Quantity,
+                                                    Cost = item.Cost,
+                                                    Amount = item.Amount,
+                                                    AssetAccountId = items.FirstOrDefault().AssetAccountId,
+                                                };
+
+                                                posData2.TrnStockOutLines.InsertOnSubmit(newStockOutLine);
+
+                                                var currentItem = from d in posData2.MstItems
+                                                                  where d.Id == newStockOutLine.ItemId
+                                                                  select d;
+
+                                                if (currentItem.Any())
+                                                {
+                                                    Decimal currentOnHandQuantity = currentItem.FirstOrDefault().OnhandQuantity;
+                                                    Decimal totalQuantity = currentOnHandQuantity - Convert.ToDecimal(item.Quantity);
+
+                                                    var updateItem = currentItem.FirstOrDefault();
+                                                    updateItem.OnhandQuantity = totalQuantity;
+                                                }
+
+                                                posData2.SubmitChanges();
+                                                Console.WriteLine("Stock Transfer (OT) - " + fileName + " was successfully saved!");
+
+                                                File.Delete(file);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (database.Equals("3"))
+                            {
+                                String fileName = "ST-" + st.BranchCode + "-" + st.STNumber;
+                                var stockOut = from d in posData3.TrnStockOuts
+                                               where d.Remarks.Equals(fileName)
+                                               select d;
+
+                                if (!stockOut.Any())
+                                {
+                                    var defaultPeriod = from d in posData3.MstPeriods select d;
+                                    var defaultSettings = from d in posData3.SysSettings select d;
+
+                                    var lastStockOutNumber = from d in posData3.TrnStockOuts.OrderByDescending(d => d.Id) select d;
+                                    var stockOutNumberResult = defaultPeriod.FirstOrDefault().Period + "-000001";
+
+                                    if (lastStockOutNumber.Any())
+                                    {
+                                        var stockOutNumberSplitStrings = lastStockOutNumber.FirstOrDefault().StockOutNumber;
+                                        Int32 secondIndex = stockOutNumberSplitStrings.IndexOf('-', stockOutNumberSplitStrings.IndexOf('-'));
+                                        var stockOutNumberSplitStringValue = stockOutNumberSplitStrings.Substring(secondIndex + 1);
+                                        var stockOutNumber = Convert.ToInt32(stockOutNumberSplitStringValue) + 000001;
+                                        stockOutNumberResult = defaultPeriod.FirstOrDefault().Period + "-" + FillLeadingZeroes(stockOutNumber, 6);
+                                    }
+
+                                    var accounts = from d in posData3.MstAccounts
+                                                   select d;
+
+                                    if (accounts.Any())
+                                    {
+                                        POSdb3.TrnStockOut newStockOut = new POSdb3.TrnStockOut
+                                        {
+                                            PeriodId = defaultPeriod.FirstOrDefault().Id,
+                                            StockOutDate = Convert.ToDateTime(st.STDate),
+                                            StockOutNumber = stockOutNumberResult,
+                                            AccountId = accounts.FirstOrDefault().Id,
+                                            Remarks = fileName,
+                                            PreparedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                            CheckedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                            ApprovedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                            IsLocked = true,
+                                            EntryUserId = defaultSettings.FirstOrDefault().PostUserId,
+                                            EntryDateTime = DateTime.Now,
+                                            UpdateUserId = defaultSettings.FirstOrDefault().PostUserId,
+                                            UpdateDateTime = DateTime.Now,
                                         };
 
-                                        posData1.TrnStockOutLines.InsertOnSubmit(newStockOutLine);
+                                        posData3.TrnStockOuts.InsertOnSubmit(newStockOut);
+                                        posData3.SubmitChanges();
 
-                                        var currentItem = from d in posData1.MstItems
-                                                          where d.Id == newStockOutLine.ItemId
-                                                          select d;
-
-                                        if (currentItem.Any())
+                                        foreach (var item in st.ListPOSIntegrationTrnStockTransferItem.ToList())
                                         {
-                                            Decimal currentOnHandQuantity = currentItem.FirstOrDefault().OnhandQuantity;
-                                            Decimal totalQuantity = currentOnHandQuantity - Convert.ToDecimal(item.Quantity);
+                                            var items = from d in posData3.MstItems
+                                                        where d.BarCode.Equals(item.ItemCode)
+                                                        select d;
 
-                                            var updateItem = currentItem.FirstOrDefault();
-                                            updateItem.OnhandQuantity = totalQuantity;
+                                            if (items.Any())
+                                            {
+                                                var units = from d in posData3.MstUnits
+                                                            where d.Unit.Equals(item.Unit)
+                                                            select d;
+
+                                                if (units.Any())
+                                                {
+                                                    POSdb3.TrnStockOutLine newStockOutLine = new POSdb3.TrnStockOutLine
+                                                    {
+                                                        StockOutId = newStockOut.Id,
+                                                        ItemId = items.FirstOrDefault().Id,
+                                                        UnitId = units.FirstOrDefault().Id,
+                                                        Quantity = item.Quantity,
+                                                        Cost = item.Cost,
+                                                        Amount = item.Amount,
+                                                        AssetAccountId = items.FirstOrDefault().AssetAccountId,
+                                                    };
+
+                                                    posData3.TrnStockOutLines.InsertOnSubmit(newStockOutLine);
+
+                                                    var currentItem = from d in posData3.MstItems
+                                                                      where d.Id == newStockOutLine.ItemId
+                                                                      select d;
+
+                                                    if (currentItem.Any())
+                                                    {
+                                                        Decimal currentOnHandQuantity = currentItem.FirstOrDefault().OnhandQuantity;
+                                                        Decimal totalQuantity = currentOnHandQuantity - Convert.ToDecimal(item.Quantity);
+
+                                                        var updateItem = currentItem.FirstOrDefault();
+                                                        updateItem.OnhandQuantity = totalQuantity;
+                                                    }
+
+                                                    posData3.SubmitChanges();
+                                                    Console.WriteLine("Stock Transfer (OT) - " + fileName + " was successfully saved!");
+
+                                                    File.Delete(file);
+                                                }
+                                            }
                                         }
-
-                                        posData1.SubmitChanges();
-                                        Console.WriteLine("Stock Transfer (OT) - " + fileName + " was successfully saved!");
-
-                                        File.Delete(file);
                                     }
                                 }
                             }
@@ -585,7 +1084,7 @@ namespace POSIntegrator
         // =============
         // GET Stock Out
         // =============
-        public static void GetStockOut(String apiUrlHost, String stockOutDate, String branchCode)
+        public static void GetStockOut(String database, String apiUrlHost, String stockOutDate, String branchCode)
         {
             try
             {
@@ -646,19 +1145,61 @@ namespace POSIntegrator
                         String jsonFileName = jsonPath + "\\" + fileName + ".json";
                         File.WriteAllText(jsonFileName, json);
 
-                        var stockOut = from d in posData1.TrnStockOuts
-                                       where d.Remarks.Equals(fileName)
-                                       select d;
-
-                        if (!stockOut.Any())
+                        if (database.Equals("1"))
                         {
-                            Console.WriteLine("Saving Stock Out - " + fileName + "...");
-                            InsertStockOut();
+                            var stockOut = from d in posData1.TrnStockOuts
+                                           where d.Remarks.Equals(fileName)
+                                           select d;
+
+                            if (!stockOut.Any())
+                            {
+                                Console.WriteLine("Saving Stock Out - " + fileName + "...");
+                                InsertStockOut(database);
+                            }
+                            else
+                            {
+                                File.Delete(jsonFileName);
+                            }
                         }
                         else
                         {
-                            File.Delete(jsonFileName);
+                            if (database.Equals("2"))
+                            {
+                                var stockOut = from d in posData2.TrnStockOuts
+                                               where d.Remarks.Equals(fileName)
+                                               select d;
+
+                                if (!stockOut.Any())
+                                {
+                                    Console.WriteLine("Saving Stock Out - " + fileName + "...");
+                                    InsertStockOut(database);
+                                }
+                                else
+                                {
+                                    File.Delete(jsonFileName);
+                                }
+                            }
+                            else
+                            {
+                                if (database.Equals("3"))
+                                {
+                                    var stockOut = from d in posData3.TrnStockOuts
+                                                   where d.Remarks.Equals(fileName)
+                                                   select d;
+
+                                    if (!stockOut.Any())
+                                    {
+                                        Console.WriteLine("Saving Stock Out - " + fileName + "...");
+                                        InsertStockOut(database);
+                                    }
+                                    else
+                                    {
+                                        File.Delete(jsonFileName);
+                                    }
+                                }
+                            }
                         }
+
                     }
                 }
             }
@@ -671,7 +1212,7 @@ namespace POSIntegrator
         // ================
         // INSERT Stock Out
         // ================
-        public static void InsertStockOut()
+        public static void InsertStockOut(String database)
         {
             try
             {
@@ -691,102 +1232,310 @@ namespace POSIntegrator
                     var json_serializer = new JavaScriptSerializer();
                     TrnStockOut ot = json_serializer.Deserialize<TrnStockOut>(json);
 
-                    String fileName = "OT-" + ot.BranchCode + "-" + ot.OTNumber;
-                    var stockOut = from d in posData1.TrnStockOuts
-                                   where d.Remarks.Equals(fileName)
-                                   select d;
-
-                    if (!stockOut.Any())
+                    if (database.Equals("1"))
                     {
-                        var defaultPeriod = from d in posData1.MstPeriods select d;
-                        var defaultSettings = from d in posData1.SysSettings select d;
-
-                        var lastStockOutNumber = from d in posData1.TrnStockOuts.OrderByDescending(d => d.Id) select d;
-                        var stockOutNumberResult = defaultPeriod.FirstOrDefault().Period + "-000001";
-
-                        if (lastStockOutNumber.Any())
-                        {
-                            var stockOutNumberSplitStrings = lastStockOutNumber.FirstOrDefault().StockOutNumber;
-                            Int32 secondIndex = stockOutNumberSplitStrings.IndexOf('-', stockOutNumberSplitStrings.IndexOf('-'));
-                            var stockOutNumberSplitStringValue = stockOutNumberSplitStrings.Substring(secondIndex + 1);
-                            var stockOutNumber = Convert.ToInt32(stockOutNumberSplitStringValue) + 000001;
-                            stockOutNumberResult = defaultPeriod.FirstOrDefault().Period + "-" + FillLeadingZeroes(stockOutNumber, 6);
-                        }
-
-                        var accounts = from d in posData1.MstAccounts
+                        String fileName = "OT-" + ot.BranchCode + "-" + ot.OTNumber;
+                        var stockOut = from d in posData1.TrnStockOuts
+                                       where d.Remarks.Equals(fileName)
                                        select d;
 
-                        if (accounts.Any())
+                        if (!stockOut.Any())
                         {
-                            POSdb1.TrnStockOut newStockOut = new POSdb1.TrnStockOut
+                            var defaultPeriod = from d in posData1.MstPeriods select d;
+                            var defaultSettings = from d in posData1.SysSettings select d;
+
+                            var lastStockOutNumber = from d in posData1.TrnStockOuts.OrderByDescending(d => d.Id) select d;
+                            var stockOutNumberResult = defaultPeriod.FirstOrDefault().Period + "-000001";
+
+                            if (lastStockOutNumber.Any())
                             {
-                                PeriodId = defaultPeriod.FirstOrDefault().Id,
-                                StockOutDate = Convert.ToDateTime(ot.OTDate),
-                                StockOutNumber = stockOutNumberResult,
-                                AccountId = accounts.FirstOrDefault().Id,
-                                Remarks = fileName,
-                                PreparedBy = defaultSettings.FirstOrDefault().PostUserId,
-                                CheckedBy = defaultSettings.FirstOrDefault().PostUserId,
-                                ApprovedBy = defaultSettings.FirstOrDefault().PostUserId,
-                                IsLocked = true,
-                                EntryUserId = defaultSettings.FirstOrDefault().PostUserId,
-                                EntryDateTime = DateTime.Now,
-                                UpdateUserId = defaultSettings.FirstOrDefault().PostUserId,
-                                UpdateDateTime = DateTime.Now,
-                            };
+                                var stockOutNumberSplitStrings = lastStockOutNumber.FirstOrDefault().StockOutNumber;
+                                Int32 secondIndex = stockOutNumberSplitStrings.IndexOf('-', stockOutNumberSplitStrings.IndexOf('-'));
+                                var stockOutNumberSplitStringValue = stockOutNumberSplitStrings.Substring(secondIndex + 1);
+                                var stockOutNumber = Convert.ToInt32(stockOutNumberSplitStringValue) + 000001;
+                                stockOutNumberResult = defaultPeriod.FirstOrDefault().Period + "-" + FillLeadingZeroes(stockOutNumber, 6);
+                            }
 
-                            posData1.TrnStockOuts.InsertOnSubmit(newStockOut);
-                            posData1.SubmitChanges();
+                            var accounts = from d in posData1.MstAccounts
+                                           select d;
 
-                            foreach (var item in ot.ListPOSIntegrationTrnStockOutItem.ToList())
+                            if (accounts.Any())
                             {
-                                var items = from d in posData1.MstItems
-                                            where d.BarCode.Equals(item.ItemCode)
-                                            select d;
-
-                                if (items.Any())
+                                POSdb1.TrnStockOut newStockOut = new POSdb1.TrnStockOut
                                 {
-                                    var units = from d in posData1.MstUnits
-                                                where d.Unit.Equals(item.Unit)
+                                    PeriodId = defaultPeriod.FirstOrDefault().Id,
+                                    StockOutDate = Convert.ToDateTime(ot.OTDate),
+                                    StockOutNumber = stockOutNumberResult,
+                                    AccountId = accounts.FirstOrDefault().Id,
+                                    Remarks = fileName,
+                                    PreparedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                    CheckedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                    ApprovedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                    IsLocked = true,
+                                    EntryUserId = defaultSettings.FirstOrDefault().PostUserId,
+                                    EntryDateTime = DateTime.Now,
+                                    UpdateUserId = defaultSettings.FirstOrDefault().PostUserId,
+                                    UpdateDateTime = DateTime.Now,
+                                };
+
+                                posData1.TrnStockOuts.InsertOnSubmit(newStockOut);
+                                posData1.SubmitChanges();
+
+                                foreach (var item in ot.ListPOSIntegrationTrnStockOutItem.ToList())
+                                {
+                                    var items = from d in posData1.MstItems
+                                                where d.BarCode.Equals(item.ItemCode)
                                                 select d;
 
-                                    if (units.Any())
+                                    if (items.Any())
                                     {
-                                        POSdb1.TrnStockOutLine newStockOutLine = new POSdb1.TrnStockOutLine
+                                        var units = from d in posData1.MstUnits
+                                                    where d.Unit.Equals(item.Unit)
+                                                    select d;
+
+                                        if (units.Any())
                                         {
-                                            StockOutId = newStockOut.Id,
-                                            ItemId = items.FirstOrDefault().Id,
-                                            UnitId = units.FirstOrDefault().Id,
-                                            Quantity = item.Quantity,
-                                            Cost = item.Cost,
-                                            Amount = item.Amount,
-                                            AssetAccountId = items.FirstOrDefault().AssetAccountId,
-                                        };
+                                            POSdb1.TrnStockOutLine newStockOutLine = new POSdb1.TrnStockOutLine
+                                            {
+                                                StockOutId = newStockOut.Id,
+                                                ItemId = items.FirstOrDefault().Id,
+                                                UnitId = units.FirstOrDefault().Id,
+                                                Quantity = item.Quantity,
+                                                Cost = item.Cost,
+                                                Amount = item.Amount,
+                                                AssetAccountId = items.FirstOrDefault().AssetAccountId,
+                                            };
 
-                                        posData1.TrnStockOutLines.InsertOnSubmit(newStockOutLine);
+                                            posData1.TrnStockOutLines.InsertOnSubmit(newStockOutLine);
 
-                                        var currentItem = from d in posData1.MstItems
-                                                          where d.Id == newStockOutLine.ItemId
-                                                          select d;
+                                            var currentItem = from d in posData1.MstItems
+                                                              where d.Id == newStockOutLine.ItemId
+                                                              select d;
 
-                                        if (currentItem.Any())
-                                        {
-                                            Decimal currentOnHandQuantity = currentItem.FirstOrDefault().OnhandQuantity;
-                                            Decimal totalQuantity = currentOnHandQuantity - Convert.ToDecimal(item.Quantity);
+                                            if (currentItem.Any())
+                                            {
+                                                Decimal currentOnHandQuantity = currentItem.FirstOrDefault().OnhandQuantity;
+                                                Decimal totalQuantity = currentOnHandQuantity - Convert.ToDecimal(item.Quantity);
 
-                                            var updateItem = currentItem.FirstOrDefault();
-                                            updateItem.OnhandQuantity = totalQuantity;
+                                                var updateItem = currentItem.FirstOrDefault();
+                                                updateItem.OnhandQuantity = totalQuantity;
+                                            }
+
+                                            posData1.SubmitChanges();
+                                            Console.WriteLine("Stock Out - " + fileName + " was successfully saved!");
+
+                                            File.Delete(file);
                                         }
-
-                                        posData1.SubmitChanges();
-                                        Console.WriteLine("Stock Out - " + fileName + " was successfully saved!");
-
-                                        File.Delete(file);
                                     }
                                 }
                             }
                         }
                     }
+                    else
+                    {
+                        if (database.Equals("2"))
+                        {
+                            String fileName = "OT-" + ot.BranchCode + "-" + ot.OTNumber;
+                            var stockOut = from d in posData2.TrnStockOuts
+                                           where d.Remarks.Equals(fileName)
+                                           select d;
+
+                            if (!stockOut.Any())
+                            {
+                                var defaultPeriod = from d in posData2.MstPeriods select d;
+                                var defaultSettings = from d in posData2.SysSettings select d;
+
+                                var lastStockOutNumber = from d in posData2.TrnStockOuts.OrderByDescending(d => d.Id) select d;
+                                var stockOutNumberResult = defaultPeriod.FirstOrDefault().Period + "-000001";
+
+                                if (lastStockOutNumber.Any())
+                                {
+                                    var stockOutNumberSplitStrings = lastStockOutNumber.FirstOrDefault().StockOutNumber;
+                                    Int32 secondIndex = stockOutNumberSplitStrings.IndexOf('-', stockOutNumberSplitStrings.IndexOf('-'));
+                                    var stockOutNumberSplitStringValue = stockOutNumberSplitStrings.Substring(secondIndex + 1);
+                                    var stockOutNumber = Convert.ToInt32(stockOutNumberSplitStringValue) + 000001;
+                                    stockOutNumberResult = defaultPeriod.FirstOrDefault().Period + "-" + FillLeadingZeroes(stockOutNumber, 6);
+                                }
+
+                                var accounts = from d in posData2.MstAccounts
+                                               select d;
+
+                                if (accounts.Any())
+                                {
+                                    POSdb2.TrnStockOut newStockOut = new POSdb2.TrnStockOut
+                                    {
+                                        PeriodId = defaultPeriod.FirstOrDefault().Id,
+                                        StockOutDate = Convert.ToDateTime(ot.OTDate),
+                                        StockOutNumber = stockOutNumberResult,
+                                        AccountId = accounts.FirstOrDefault().Id,
+                                        Remarks = fileName,
+                                        PreparedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                        CheckedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                        ApprovedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                        IsLocked = true,
+                                        EntryUserId = defaultSettings.FirstOrDefault().PostUserId,
+                                        EntryDateTime = DateTime.Now,
+                                        UpdateUserId = defaultSettings.FirstOrDefault().PostUserId,
+                                        UpdateDateTime = DateTime.Now,
+                                    };
+
+                                    posData2.TrnStockOuts.InsertOnSubmit(newStockOut);
+                                    posData2.SubmitChanges();
+
+                                    foreach (var item in ot.ListPOSIntegrationTrnStockOutItem.ToList())
+                                    {
+                                        var items = from d in posData2.MstItems
+                                                    where d.BarCode.Equals(item.ItemCode)
+                                                    select d;
+
+                                        if (items.Any())
+                                        {
+                                            var units = from d in posData2.MstUnits
+                                                        where d.Unit.Equals(item.Unit)
+                                                        select d;
+
+                                            if (units.Any())
+                                            {
+                                                POSdb2.TrnStockOutLine newStockOutLine = new POSdb2.TrnStockOutLine
+                                                {
+                                                    StockOutId = newStockOut.Id,
+                                                    ItemId = items.FirstOrDefault().Id,
+                                                    UnitId = units.FirstOrDefault().Id,
+                                                    Quantity = item.Quantity,
+                                                    Cost = item.Cost,
+                                                    Amount = item.Amount,
+                                                    AssetAccountId = items.FirstOrDefault().AssetAccountId,
+                                                };
+
+                                                posData2.TrnStockOutLines.InsertOnSubmit(newStockOutLine);
+
+                                                var currentItem = from d in posData2.MstItems
+                                                                  where d.Id == newStockOutLine.ItemId
+                                                                  select d;
+
+                                                if (currentItem.Any())
+                                                {
+                                                    Decimal currentOnHandQuantity = currentItem.FirstOrDefault().OnhandQuantity;
+                                                    Decimal totalQuantity = currentOnHandQuantity - Convert.ToDecimal(item.Quantity);
+
+                                                    var updateItem = currentItem.FirstOrDefault();
+                                                    updateItem.OnhandQuantity = totalQuantity;
+                                                }
+
+                                                posData2.SubmitChanges();
+                                                Console.WriteLine("Stock Out - " + fileName + " was successfully saved!");
+
+                                                File.Delete(file);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (database.Equals("3"))
+                            {
+                                String fileName = "OT-" + ot.BranchCode + "-" + ot.OTNumber;
+                                var stockOut = from d in posData3.TrnStockOuts
+                                               where d.Remarks.Equals(fileName)
+                                               select d;
+
+                                if (!stockOut.Any())
+                                {
+                                    var defaultPeriod = from d in posData3.MstPeriods select d;
+                                    var defaultSettings = from d in posData3.SysSettings select d;
+
+                                    var lastStockOutNumber = from d in posData3.TrnStockOuts.OrderByDescending(d => d.Id) select d;
+                                    var stockOutNumberResult = defaultPeriod.FirstOrDefault().Period + "-000001";
+
+                                    if (lastStockOutNumber.Any())
+                                    {
+                                        var stockOutNumberSplitStrings = lastStockOutNumber.FirstOrDefault().StockOutNumber;
+                                        Int32 secondIndex = stockOutNumberSplitStrings.IndexOf('-', stockOutNumberSplitStrings.IndexOf('-'));
+                                        var stockOutNumberSplitStringValue = stockOutNumberSplitStrings.Substring(secondIndex + 1);
+                                        var stockOutNumber = Convert.ToInt32(stockOutNumberSplitStringValue) + 000001;
+                                        stockOutNumberResult = defaultPeriod.FirstOrDefault().Period + "-" + FillLeadingZeroes(stockOutNumber, 6);
+                                    }
+
+                                    var accounts = from d in posData3.MstAccounts
+                                                   select d;
+
+                                    if (accounts.Any())
+                                    {
+                                        POSdb3.TrnStockOut newStockOut = new POSdb3.TrnStockOut
+                                        {
+                                            PeriodId = defaultPeriod.FirstOrDefault().Id,
+                                            StockOutDate = Convert.ToDateTime(ot.OTDate),
+                                            StockOutNumber = stockOutNumberResult,
+                                            AccountId = accounts.FirstOrDefault().Id,
+                                            Remarks = fileName,
+                                            PreparedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                            CheckedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                            ApprovedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                            IsLocked = true,
+                                            EntryUserId = defaultSettings.FirstOrDefault().PostUserId,
+                                            EntryDateTime = DateTime.Now,
+                                            UpdateUserId = defaultSettings.FirstOrDefault().PostUserId,
+                                            UpdateDateTime = DateTime.Now,
+                                        };
+
+                                        posData3.TrnStockOuts.InsertOnSubmit(newStockOut);
+                                        posData3.SubmitChanges();
+
+                                        foreach (var item in ot.ListPOSIntegrationTrnStockOutItem.ToList())
+                                        {
+                                            var items = from d in posData3.MstItems
+                                                        where d.BarCode.Equals(item.ItemCode)
+                                                        select d;
+
+                                            if (items.Any())
+                                            {
+                                                var units = from d in posData3.MstUnits
+                                                            where d.Unit.Equals(item.Unit)
+                                                            select d;
+
+                                                if (units.Any())
+                                                {
+                                                    POSdb3.TrnStockOutLine newStockOutLine = new POSdb3.TrnStockOutLine
+                                                    {
+                                                        StockOutId = newStockOut.Id,
+                                                        ItemId = items.FirstOrDefault().Id,
+                                                        UnitId = units.FirstOrDefault().Id,
+                                                        Quantity = item.Quantity,
+                                                        Cost = item.Cost,
+                                                        Amount = item.Amount,
+                                                        AssetAccountId = items.FirstOrDefault().AssetAccountId,
+                                                    };
+
+                                                    posData3.TrnStockOutLines.InsertOnSubmit(newStockOutLine);
+
+                                                    var currentItem = from d in posData3.MstItems
+                                                                      where d.Id == newStockOutLine.ItemId
+                                                                      select d;
+
+                                                    if (currentItem.Any())
+                                                    {
+                                                        Decimal currentOnHandQuantity = currentItem.FirstOrDefault().OnhandQuantity;
+                                                        Decimal totalQuantity = currentOnHandQuantity - Convert.ToDecimal(item.Quantity);
+
+                                                        var updateItem = currentItem.FirstOrDefault();
+                                                        updateItem.OnhandQuantity = totalQuantity;
+                                                    }
+
+                                                    posData3.SubmitChanges();
+                                                    Console.WriteLine("Stock Out - " + fileName + " was successfully saved!");
+
+                                                    File.Delete(file);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                 }
             }
             catch (Exception e)
@@ -889,9 +1638,9 @@ namespace POSIntegrator
                             DateTime dateTimeToday = DateTime.Today;
                             var currentDate = dateTimeToday.ToString("MM-dd-yyyy", CultureInfo.InvariantCulture);
                             var branchCode = sysSettings.FirstOrDefault().BranchCode;
-                            GetStockTransferIN(apiUrlHost, currentDate, branchCode);
-                            GetStockTransferOT(apiUrlHost, currentDate, branchCode);
-                            GetStockOut(apiUrlHost, currentDate, branchCode);
+                            GetStockTransferIN(database, apiUrlHost, currentDate, branchCode);
+                            GetStockTransferOT(database, apiUrlHost, currentDate, branchCode);
+                            GetStockOut(database, apiUrlHost, currentDate, branchCode);
                         }
                     }
                     else if (database.Equals("2"))
@@ -964,9 +1713,9 @@ namespace POSIntegrator
                             DateTime dateTimeToday = DateTime.Today;
                             var currentDate = dateTimeToday.ToString("MM-dd-yyyy", CultureInfo.InvariantCulture);
                             var branchCode = sysSettings.FirstOrDefault().BranchCode;
-                            GetStockTransferIN(apiUrlHost, currentDate, branchCode);
-                            GetStockTransferOT(apiUrlHost, currentDate, branchCode);
-                            GetStockOut(apiUrlHost, currentDate, branchCode);
+                            GetStockTransferIN(database, apiUrlHost, currentDate, branchCode);
+                            GetStockTransferOT(database, apiUrlHost, currentDate, branchCode);
+                            GetStockOut(database, apiUrlHost, currentDate, branchCode);
                         }
                     }
                     else if (database.Equals("3"))
@@ -1039,9 +1788,9 @@ namespace POSIntegrator
                             DateTime dateTimeToday = DateTime.Today;
                             var currentDate = dateTimeToday.ToString("MM-dd-yyyy", CultureInfo.InvariantCulture);
                             var branchCode = sysSettings.FirstOrDefault().BranchCode;
-                            GetStockTransferIN(apiUrlHost, currentDate, branchCode);
-                            GetStockTransferOT(apiUrlHost, currentDate, branchCode);
-                            GetStockOut(apiUrlHost, currentDate, branchCode);
+                            GetStockTransferIN(database, apiUrlHost, currentDate, branchCode);
+                            GetStockTransferOT(database, apiUrlHost, currentDate, branchCode);
+                            GetStockOut(database, apiUrlHost, currentDate, branchCode);
                         }
                     }
                     else
