@@ -12,7 +12,7 @@
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>C:\Users\User\Desktop\POS Integrator Installer\</PublishUrl>
+    <PublishUrl>D:\Innosoft\POS Integrator Installer\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
     <UpdateEnabled>false</UpdateEnabled>
@@ -22,7 +22,7 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>1</ApplicationRevision>
+    <ApplicationRevision>2</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -82,19 +82,23 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\Collection.cs" />
+    <Compile Include="Controllers\StockOut.cs" />
+    <Compile Include="Controllers\StockTransferIn.cs" />
+    <Compile Include="Controllers\StockTransferOut.cs" />
     <Compile Include="Entities\TrnCollection.cs" />
     <Compile Include="Entities\TrnCollectionLines.cs" />
-    <Compile Include="POSdb1.designer.cs">
+    <Compile Include="Data\POSdb1.designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>POSdb1.dbml</DependentUpon>
     </Compile>
-    <Compile Include="POSdb2.designer.cs">
+    <Compile Include="Data\POSdb2.designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>POSdb2.dbml</DependentUpon>
     </Compile>
-    <Compile Include="POSdb3.designer.cs">
+    <Compile Include="Data\POSdb3.designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>POSdb3.dbml</DependentUpon>
@@ -114,31 +118,31 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-    <None Include="POSdb1.dbml">
+    <None Include="Data\POSdb1.dbml">
       <Generator>MSLinqToSQLGenerator</Generator>
       <LastGenOutput>POSdb1.designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
       <CustomToolNamespace>POSdb1</CustomToolNamespace>
     </None>
-    <None Include="POSdb1.dbml.layout">
+    <None Include="Data\POSdb1.dbml.layout">
       <DependentUpon>POSdb1.dbml</DependentUpon>
     </None>
-    <None Include="POSdb2.dbml">
+    <None Include="Data\POSdb2.dbml">
       <Generator>MSLinqToSQLGenerator</Generator>
       <LastGenOutput>POSdb2.designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
       <CustomToolNamespace>POSdb2</CustomToolNamespace>
     </None>
-    <None Include="POSdb2.dbml.layout">
+    <None Include="Data\POSdb2.dbml.layout">
       <DependentUpon>POSdb2.dbml</DependentUpon>
     </None>
-    <None Include="POSdb3.dbml">
+    <None Include="Data\POSdb3.dbml">
       <Generator>MSLinqToSQLGenerator</Generator>
       <LastGenOutput>POSdb3.designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
       <CustomToolNamespace>POSdb3</CustomToolNamespace>
     </None>
-    <None Include="POSdb3.dbml.layout">
+    <None Include="Data\POSdb3.dbml.layout">
       <DependentUpon>POSdb3.dbml</DependentUpon>
     </None>
     <None Include="POSIntegrator_TemporaryKey.pfx" />
