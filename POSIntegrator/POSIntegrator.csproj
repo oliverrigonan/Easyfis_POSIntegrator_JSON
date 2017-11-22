@@ -83,6 +83,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\Collection.cs" />
+    <Compile Include="Controllers\ReceivingReceipt.cs" />
     <Compile Include="Controllers\StockOut.cs" />
     <Compile Include="Controllers\StockTransferIn.cs" />
     <Compile Include="Controllers\StockTransferOut.cs" />
@@ -103,6 +104,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>POSdb3.dbml</DependentUpon>
     </Compile>
+    <Compile Include="Entities\TrnReceivingReceipt.cs" />
+    <Compile Include="Entities\TrnReceivingReceiptItem.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
