@@ -109,6 +109,7 @@ namespace POSIntegrator
             Controllers.StockTransferIn objStockTransferIn = new Controllers.StockTransferIn();
             Controllers.StockTransferOut objStockTransferOut = new Controllers.StockTransferOut();
             Controllers.StockOut objStockOut = new Controllers.StockOut();
+            Controllers.ReceivingReceipt objReceivingReceipt = new Controllers.ReceivingReceipt();
 
             while (true)
             {
@@ -126,6 +127,7 @@ namespace POSIntegrator
                             objStockTransferIn.GetStockTransferIN(database, apiUrlHost, branchCode);
                             objStockTransferOut.GetStockTransferOT(database, apiUrlHost, branchCode);
                             objStockOut.GetStockOut(database, apiUrlHost, branchCode);
+                            objReceivingReceipt.GetReceivingReceipt(database, apiUrlHost, branchCode);
                         }
                     }
                     else if (database.Equals("2"))
@@ -140,6 +142,7 @@ namespace POSIntegrator
                             objStockTransferIn.GetStockTransferIN(database, apiUrlHost, branchCode);
                             objStockTransferOut.GetStockTransferOT(database, apiUrlHost, branchCode);
                             objStockOut.GetStockOut(database, apiUrlHost, branchCode);
+                            objReceivingReceipt.GetReceivingReceipt(database, apiUrlHost, branchCode);
                         }
                     }
                     else
@@ -156,6 +159,7 @@ namespace POSIntegrator
                                 objStockTransferIn.GetStockTransferIN(database, apiUrlHost, branchCode);
                                 objStockTransferOut.GetStockTransferOT(database, apiUrlHost, branchCode);
                                 objStockOut.GetStockOut(database, apiUrlHost, branchCode);
+                                objReceivingReceipt.GetReceivingReceipt(database, apiUrlHost, branchCode);
                             }
                         }
                     }
