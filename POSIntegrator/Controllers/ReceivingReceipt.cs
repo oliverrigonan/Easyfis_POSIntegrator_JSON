@@ -42,7 +42,7 @@ namespace POSIntegrator.Controllers
         {
             try
             {
-                DateTime dateTimeToday = DateTime.Today;
+                DateTime dateTimeToday = DateTime.Now;
                 String receivingReceiptDate = dateTimeToday.ToString("MM-dd-yyyy", CultureInfo.InvariantCulture);
 
                 var httpWebRequest = (HttpWebRequest)WebRequest.Create("http://" + apiUrlHost + "/api/get/POSIntegration/receivingReceipt/" + receivingReceiptDate + "/" + branchCode);
