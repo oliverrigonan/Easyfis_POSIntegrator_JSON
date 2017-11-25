@@ -10,12 +10,10 @@ namespace POSIntegrator.Controllers
 {
     class Collection
     {
-        // =============
-        // Data Contexts
-        // =============
-        private static POSdb1.POSdb1DataContext posData1 = new POSdb1.POSdb1DataContext();
-        private static POSdb2.POSdb2DataContext posData2 = new POSdb2.POSdb2DataContext();
-        private static POSdb3.POSdb3DataContext posData3 = new POSdb3.POSdb3DataContext();
+        // ============
+        // Data Context
+        // ============
+        private static Data.POSDatabaseDataContext posData;
 
         // ==============
         // Get Collection
@@ -24,161 +22,55 @@ namespace POSIntegrator.Controllers
         {
             try
             {
+                var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
+                posData = new Data.POSDatabaseDataContext(newConnectionString);
+
                 String jsonPath = "d:/innosoft/json/SI";
-
-                if (database.Equals("1"))
+                var collections = from d in posData.TrnCollections where d.PostCode == null && d.CollectionNumber != "NA" select d;
+                if (collections.Any())
                 {
-                    var collections = from d in posData1.TrnCollections where d.PostCode == null && d.CollectionNumber != "NA" select d;
-                    if (collections.Any())
+                    foreach (var collection in collections)
                     {
-                        foreach (var collection in collections)
+                        List<TrnCollectionLines> listCollectionLines = new List<TrnCollectionLines>();
+                        if (collection.TrnSale != null)
                         {
-                            List<TrnCollectionLines> listCollectionLines = new List<TrnCollectionLines>();
-                            if (collection.TrnSale != null)
+                            foreach (var salesLine in collection.TrnSale.TrnSalesLines)
                             {
-                                foreach (var salesLine in collection.TrnSale.TrnSalesLines)
+                                listCollectionLines.Add(new TrnCollectionLines()
                                 {
-                                    listCollectionLines.Add(new TrnCollectionLines()
-                                    {
-                                        ItemManualArticleCode = salesLine.MstItem.BarCode,
-                                        Particulars = salesLine.MstItem.ItemDescription,
-                                        Unit = salesLine.MstUnit.Unit,
-                                        Quantity = salesLine.Quantity,
-                                        Price = salesLine.Price,
-                                        Discount = salesLine.MstDiscount.Discount,
-                                        DiscountAmount = salesLine.DiscountAmount,
-                                        NetPrice = salesLine.NetPrice,
-                                        Amount = salesLine.Amount,
-                                        VAT = salesLine.MstTax.Tax,
-                                        SalesItemTimeStamp = salesLine.SalesLineTimeStamp.ToString("MM/dd/yyyy HH:mm:ss.fff", CultureInfo.InvariantCulture)
-                                    });
-                                }
-
-                                var collectionData = new TrnCollection()
-                                {
-                                    SIDate = collection.CollectionDate.ToShortDateString(),
-                                    BranchCode = branchCode,
-                                    CustomerManualArticleCode = collection.TrnSale.MstCustomer.CustomerCode,
-                                    CreatedBy = userCode,
-                                    Term = collection.TrnSale.MstTerm.Term,
-                                    DocumentReference = collection.CollectionNumber,
-                                    ManualSINumber = collection.TrnSale.SalesNumber,
-                                    Remarks = collection.MstUser4.UserName,
-                                    ListPOSIntegrationTrnSalesInvoiceItem = listCollectionLines.ToList()
-                                };
-
-                                String json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(collectionData);
-                                String jsonFileName = jsonPath + "\\" + collection.CollectionNumber + ".json";
-                                File.WriteAllText(jsonFileName, json);
-
-                                Console.WriteLine("Sending Collection Number " + collection.CollectionNumber + "...");
-                                SendSIJsonFiles(jsonPath, apiUrlHost, database);
+                                    ItemManualArticleCode = salesLine.MstItem.BarCode,
+                                    Particulars = salesLine.MstItem.ItemDescription,
+                                    Unit = salesLine.MstUnit.Unit,
+                                    Quantity = salesLine.Quantity,
+                                    Price = salesLine.Price,
+                                    Discount = salesLine.MstDiscount.Discount,
+                                    DiscountAmount = salesLine.DiscountAmount,
+                                    NetPrice = salesLine.NetPrice,
+                                    Amount = salesLine.Amount,
+                                    VAT = salesLine.MstTax.Tax,
+                                    SalesItemTimeStamp = salesLine.SalesLineTimeStamp.ToString("MM/dd/yyyy HH:mm:ss.fff", CultureInfo.InvariantCulture)
+                                });
                             }
-                        }
-                    }
-                }
-                else if (database.Equals("2"))
-                {
-                    var collections = from d in posData2.TrnCollections where d.PostCode == null && d.CollectionNumber != "NA" select d;
-                    if (collections.Any())
-                    {
-                        foreach (var collection in collections)
-                        {
-                            List<TrnCollectionLines> listCollectionLines = new List<TrnCollectionLines>();
-                            if (collection.TrnSale != null)
+
+                            var collectionData = new TrnCollection()
                             {
-                                foreach (var salesLine in collection.TrnSale.TrnSalesLines)
-                                {
-                                    listCollectionLines.Add(new TrnCollectionLines()
-                                    {
-                                        ItemManualArticleCode = salesLine.MstItem.BarCode,
-                                        Particulars = salesLine.MstItem.ItemDescription,
-                                        Unit = salesLine.MstUnit.Unit,
-                                        Quantity = salesLine.Quantity,
-                                        Price = salesLine.Price,
-                                        Discount = salesLine.MstDiscount.Discount,
-                                        DiscountAmount = salesLine.DiscountAmount,
-                                        NetPrice = salesLine.NetPrice,
-                                        Amount = salesLine.Amount,
-                                        VAT = salesLine.MstTax.Tax,
-                                        SalesItemTimeStamp = salesLine.SalesLineTimeStamp.ToString("MM/dd/yyyy HH:mm:ss.fff", CultureInfo.InvariantCulture)
-                                    });
-                                }
+                                SIDate = collection.CollectionDate.ToShortDateString(),
+                                BranchCode = branchCode,
+                                CustomerManualArticleCode = collection.TrnSale.MstCustomer.CustomerCode,
+                                CreatedBy = userCode,
+                                Term = collection.TrnSale.MstTerm.Term,
+                                DocumentReference = collection.CollectionNumber,
+                                ManualSINumber = collection.TrnSale.SalesNumber,
+                                Remarks = collection.MstUser4.UserName,
+                                ListPOSIntegrationTrnSalesInvoiceItem = listCollectionLines.ToList()
+                            };
 
-                                var collectionData = new TrnCollection()
-                                {
-                                    SIDate = collection.CollectionDate.ToShortDateString(),
-                                    BranchCode = branchCode,
-                                    CustomerManualArticleCode = collection.TrnSale.MstCustomer.CustomerCode,
-                                    CreatedBy = userCode,
-                                    Term = collection.TrnSale.MstTerm.Term,
-                                    DocumentReference = collection.CollectionNumber,
-                                    ManualSINumber = collection.TrnSale.SalesNumber,
-                                    Remarks = collection.MstUser4.UserName,
-                                    ListPOSIntegrationTrnSalesInvoiceItem = listCollectionLines.ToList()
-                                };
+                            String json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(collectionData);
+                            String jsonFileName = jsonPath + "\\" + collection.CollectionNumber + ".json";
+                            File.WriteAllText(jsonFileName, json);
 
-                                String json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(collectionData);
-                                String jsonFileName = jsonPath + "\\" + collection.CollectionNumber + ".json";
-                                File.WriteAllText(jsonFileName, json);
-
-                                Console.WriteLine("Sending Collection Number " + collection.CollectionNumber + "...");
-                                SendSIJsonFiles(jsonPath, apiUrlHost, database);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    if (database.Equals("3"))
-                    {
-                        var collections = from d in posData3.TrnCollections where d.PostCode == null && d.CollectionNumber != "NA" select d;
-                        if (collections.Any())
-                        {
-                            foreach (var collection in collections)
-                            {
-                                List<TrnCollectionLines> listCollectionLines = new List<TrnCollectionLines>();
-                                if (collection.TrnSale != null)
-                                {
-                                    foreach (var salesLine in collection.TrnSale.TrnSalesLines)
-                                    {
-                                        listCollectionLines.Add(new TrnCollectionLines()
-                                        {
-                                            ItemManualArticleCode = salesLine.MstItem.BarCode,
-                                            Particulars = salesLine.MstItem.ItemDescription,
-                                            Unit = salesLine.MstUnit.Unit,
-                                            Quantity = salesLine.Quantity,
-                                            Price = salesLine.Price,
-                                            Discount = salesLine.MstDiscount.Discount,
-                                            DiscountAmount = salesLine.DiscountAmount,
-                                            NetPrice = salesLine.NetPrice,
-                                            Amount = salesLine.Amount,
-                                            VAT = salesLine.MstTax.Tax,
-                                            SalesItemTimeStamp = salesLine.SalesLineTimeStamp.ToString("MM/dd/yyyy HH:mm:ss.fff", CultureInfo.InvariantCulture)
-                                        });
-                                    }
-
-                                    var collectionData = new TrnCollection()
-                                    {
-                                        SIDate = collection.CollectionDate.ToShortDateString(),
-                                        BranchCode = branchCode,
-                                        CustomerManualArticleCode = collection.TrnSale.MstCustomer.CustomerCode,
-                                        CreatedBy = userCode,
-                                        Term = collection.TrnSale.MstTerm.Term,
-                                        DocumentReference = collection.CollectionNumber,
-                                        ManualSINumber = collection.TrnSale.SalesNumber,
-                                        Remarks = collection.MstUser4.UserName,
-                                        ListPOSIntegrationTrnSalesInvoiceItem = listCollectionLines.ToList()
-                                    };
-
-                                    String json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(collectionData);
-                                    String jsonFileName = jsonPath + "\\" + collection.CollectionNumber + ".json";
-                                    File.WriteAllText(jsonFileName, json);
-
-                                    Console.WriteLine("Sending Collection Number " + collection.CollectionNumber + "...");
-                                    SendSIJsonFiles(jsonPath, apiUrlHost, database);
-                                }
-                            }
+                            Console.WriteLine("Sending Collection Number " + collection.CollectionNumber + "...");
+                            SendSIJsonFiles(jsonPath, apiUrlHost, database);
                         }
                     }
                 }
@@ -236,50 +128,19 @@ namespace POSIntegrator.Controllers
                         Console.WriteLine("Post Code: " + result.Replace("\"", ""));
                         Console.WriteLine();
 
-                        if (database.Equals("1"))
-                        {
-                            var collections = from d in posData1.TrnCollections
-                                              where d.CollectionNumber.Equals(c.DocumentReference)
-                                              select d;
+                        var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
+                        posData = new Data.POSDatabaseDataContext(newConnectionString);
 
-                            if (collections.Any())
-                            {
-                                var collection = collections.FirstOrDefault();
-                                collection.PostCode = result.Replace("\"", "");
-                                posData1.SubmitChanges();
-                                File.Delete(file);
-                            }
-                        }
-                        else if (database.Equals("2"))
-                        {
-                            var collections = from d in posData2.TrnCollections
-                                              where d.CollectionNumber.Equals(c.DocumentReference)
-                                              select d;
+                        var collections = from d in posData.TrnCollections
+                                          where d.CollectionNumber.Equals(c.DocumentReference)
+                                          select d;
 
-                            if (collections.Any())
-                            {
-                                var collection = collections.FirstOrDefault();
-                                collection.PostCode = result.Replace("\"", "");
-                                posData2.SubmitChanges();
-                                File.Delete(file);
-                            }
-                        }
-                        else
+                        if (collections.Any())
                         {
-                            if (database.Equals("3"))
-                            {
-                                var collections = from d in posData3.TrnCollections
-                                                  where d.CollectionNumber.Equals(c.DocumentReference)
-                                                  select d;
-
-                                if (collections.Any())
-                                {
-                                    var collection = collections.FirstOrDefault();
-                                    collection.PostCode = result.Replace("\"", "");
-                                    posData3.SubmitChanges();
-                                    File.Delete(file);
-                                }
-                            }
+                            var collection = collections.FirstOrDefault();
+                            collection.PostCode = result.Replace("\"", "");
+                            posData.SubmitChanges();
+                            File.Delete(file);
                         }
                     }
                 }

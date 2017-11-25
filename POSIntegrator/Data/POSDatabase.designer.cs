@@ -9,7 +9,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace POSdb3
+namespace POSIntegrator.Data
 {
 	using System.Data.Linq;
 	using System.Data.Linq.Mapping;
@@ -22,8 +22,8 @@ namespace POSdb3
 	using System;
 	
 	
-	[global::System.Data.Linq.Mapping.DatabaseAttribute(Name="pos13_S3")]
-	public partial class POSdb3DataContext : System.Data.Linq.DataContext
+	[global::System.Data.Linq.Mapping.DatabaseAttribute(Name="pos13")]
+	public partial class POSDatabaseDataContext : System.Data.Linq.DataContext
 	{
 		
 		private static System.Data.Linq.Mapping.MappingSource mappingSource = new AttributeMappingSource();
@@ -161,31 +161,31 @@ namespace POSdb3
     partial void DeleteTrnStockOut(TrnStockOut instance);
     #endregion
 		
-		public POSdb3DataContext() : 
-				base(global::POSIntegrator.Properties.Settings.Default.pos13_S3ConnectionString, mappingSource)
+		public POSDatabaseDataContext() : 
+				base(global::POSIntegrator.Properties.Settings.Default.pos13ConnectionString1, mappingSource)
 		{
 			OnCreated();
 		}
 		
-		public POSdb3DataContext(string connection) : 
+		public POSDatabaseDataContext(string connection) : 
 				base(connection, mappingSource)
 		{
 			OnCreated();
 		}
 		
-		public POSdb3DataContext(System.Data.IDbConnection connection) : 
+		public POSDatabaseDataContext(System.Data.IDbConnection connection) : 
 				base(connection, mappingSource)
 		{
 			OnCreated();
 		}
 		
-		public POSdb3DataContext(string connection, System.Data.Linq.Mapping.MappingSource mappingSource) : 
+		public POSDatabaseDataContext(string connection, System.Data.Linq.Mapping.MappingSource mappingSource) : 
 				base(connection, mappingSource)
 		{
 			OnCreated();
 		}
 		
-		public POSdb3DataContext(System.Data.IDbConnection connection, System.Data.Linq.Mapping.MappingSource mappingSource) : 
+		public POSDatabaseDataContext(System.Data.IDbConnection connection, System.Data.Linq.Mapping.MappingSource mappingSource) : 
 				base(connection, mappingSource)
 		{
 			OnCreated();

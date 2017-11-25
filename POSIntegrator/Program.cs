@@ -7,12 +7,10 @@ namespace POSIntegrator
 {
     class Program
     {
-        // =============
-        // Data Contexts
-        // =============
-        private static POSdb1.POSdb1DataContext posData1 = new POSdb1.POSdb1DataContext();
-        private static POSdb2.POSdb2DataContext posData2 = new POSdb2.POSdb2DataContext();
-        private static POSdb3.POSdb3DataContext posData3 = new POSdb3.POSdb3DataContext();
+        // ============
+        // Data Context
+        // ============
+        private static Data.POSDatabaseDataContext posData;
 
         // ===========
         // Main Method
@@ -33,76 +31,45 @@ namespace POSIntegrator
             Console.WriteLine("===========================================");
 
             Console.WriteLine();
-            Console.WriteLine("Connecting to server...");
 
             Boolean isConnected = false;
 
-            if (database.Equals("1"))
+            var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
+            posData = new Data.POSDatabaseDataContext(newConnectionString);
+
+            if (!database.Equals(""))
             {
-                if (posData1.DatabaseExists())
+                if (!apiUrlHost.Equals(""))
                 {
-                    var sysSettings = from d in posData1.SysSettings select d;
-                    if (sysSettings.Any())
+                    Console.WriteLine("Connecting to server...");
+
+                    if (posData.DatabaseExists())
                     {
-                        var branchCode = sysSettings.FirstOrDefault().BranchCode;
+                        var sysSettings = from d in posData.SysSettings select d;
+                        if (sysSettings.Any())
+                        {
+                            var branchCode = sysSettings.FirstOrDefault().BranchCode;
 
-                        Console.WriteLine("Connected! Branch Code: " + branchCode);
-                        Console.WriteLine("Waiting for transactions...");
-                        Console.WriteLine();
+                            Console.WriteLine("Connected! Branch Code: " + branchCode);
+                            Console.WriteLine("Waiting for transactions...");
+                            Console.WriteLine();
+                        }
+
+                        isConnected = true;
                     }
-
-                    isConnected = true;
+                    else
+                    {
+                        Console.WriteLine("Database not found!");
+                    }
                 }
                 else
                 {
-                    Console.WriteLine("Database not found!");
-                }
-            }
-            else if (database.Equals("2"))
-            {
-                if (posData2.DatabaseExists())
-                {
-                    var sysSettings = from d in posData2.SysSettings select d;
-                    if (sysSettings.Any())
-                    {
-                        var branchCode = sysSettings.FirstOrDefault().BranchCode;
-
-                        Console.WriteLine("Connected! Branch Code: " + branchCode);
-                        Console.WriteLine("Waiting for transactions...");
-                        Console.WriteLine();
-                    }
-
-                    isConnected = true;
-                }
-                else
-                {
-                    Console.WriteLine("Database not found!");
-                }
-            }
-            else if (database.Equals("3"))
-            {
-                if (posData3.DatabaseExists())
-                {
-                    var sysSettings = from d in posData3.SysSettings select d;
-                    if (sysSettings.Any())
-                    {
-                        var branchCode = sysSettings.FirstOrDefault().BranchCode;
-
-                        Console.WriteLine("Connected! Branch Code: " + branchCode);
-                        Console.WriteLine("Waiting for transactions...");
-                        Console.WriteLine();
-                    }
-
-                    isConnected = true;
-                }
-                else
-                {
-                    Console.WriteLine("Database not found!");
+                    Console.WriteLine("Invalid URL Host!");
                 }
             }
             else
             {
-                Console.WriteLine("Database not found!");
+                Console.WriteLine("Invalid Database!");
             }
 
             Controllers.Collection objCollection = new Controllers.Collection();
@@ -115,55 +82,18 @@ namespace POSIntegrator
             {
                 if (isConnected)
                 {
-                    if (database.Equals("1"))
+                    var sysSettings = from d in posData.SysSettings select d;
+                    if (sysSettings.Any())
                     {
-                        var sysSettings = from d in posData1.SysSettings select d;
-                        if (sysSettings.Any())
-                        {
-                            var branchCode = sysSettings.FirstOrDefault().BranchCode;
-                            var userCode = sysSettings.FirstOrDefault().UserCode;
+                        var branchCode = sysSettings.FirstOrDefault().BranchCode;
+                        var userCode = sysSettings.FirstOrDefault().UserCode;
 
-                            objCollection.GetCollection(database, apiUrlHost, branchCode, userCode);
-                            objStockTransferIn.GetStockTransferIN(database, apiUrlHost, branchCode);
-                            objStockTransferOut.GetStockTransferOT(database, apiUrlHost, branchCode);
-                            objStockOut.GetStockOut(database, apiUrlHost, branchCode);
-                            objReceivingReceipt.GetReceivingReceipt(database, apiUrlHost, branchCode);
-                        }
+                        objCollection.GetCollection(database, apiUrlHost, branchCode, userCode);
+                        objStockTransferIn.GetStockTransferIN(database, apiUrlHost, branchCode);
+                        objStockTransferOut.GetStockTransferOT(database, apiUrlHost, branchCode);
+                        objStockOut.GetStockOut(database, apiUrlHost, branchCode);
+                        objReceivingReceipt.GetReceivingReceipt(database, apiUrlHost, branchCode);
                     }
-                    else if (database.Equals("2"))
-                    {
-                        var sysSettings = from d in posData2.SysSettings select d;
-                        if (sysSettings.Any())
-                        {
-                            var branchCode = sysSettings.FirstOrDefault().BranchCode;
-                            var userCode = sysSettings.FirstOrDefault().UserCode;
-
-                            objCollection.GetCollection(database, apiUrlHost, branchCode, userCode);
-                            objStockTransferIn.GetStockTransferIN(database, apiUrlHost, branchCode);
-                            objStockTransferOut.GetStockTransferOT(database, apiUrlHost, branchCode);
-                            objStockOut.GetStockOut(database, apiUrlHost, branchCode);
-                            objReceivingReceipt.GetReceivingReceipt(database, apiUrlHost, branchCode);
-                        }
-                    }
-                    else
-                    {
-                        if (database.Equals("3"))
-                        {
-                            var sysSettings = from d in posData3.SysSettings select d;
-                            if (sysSettings.Any())
-                            {
-                                var branchCode = sysSettings.FirstOrDefault().BranchCode;
-                                var userCode = sysSettings.FirstOrDefault().UserCode;
-
-                                objCollection.GetCollection(database, apiUrlHost, branchCode, userCode);
-                                objStockTransferIn.GetStockTransferIN(database, apiUrlHost, branchCode);
-                                objStockTransferOut.GetStockTransferOT(database, apiUrlHost, branchCode);
-                                objStockOut.GetStockOut(database, apiUrlHost, branchCode);
-                                objReceivingReceipt.GetReceivingReceipt(database, apiUrlHost, branchCode);
-                            }
-                        }
-                    }
-
                 }
 
                 Thread.Sleep(5000);

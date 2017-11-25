@@ -87,23 +87,13 @@
     <Compile Include="Controllers\StockOut.cs" />
     <Compile Include="Controllers\StockTransferIn.cs" />
     <Compile Include="Controllers\StockTransferOut.cs" />
+    <Compile Include="Data\POSDatabase.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>POSDatabase.dbml</DependentUpon>
+    </Compile>
     <Compile Include="Entities\TrnCollection.cs" />
     <Compile Include="Entities\TrnCollectionLines.cs" />
-    <Compile Include="Data\POSdb1.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>POSdb1.dbml</DependentUpon>
-    </Compile>
-    <Compile Include="Data\POSdb2.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>POSdb2.dbml</DependentUpon>
-    </Compile>
-    <Compile Include="Data\POSdb3.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>POSdb3.dbml</DependentUpon>
-    </Compile>
     <Compile Include="Entities\TrnReceivingReceipt.cs" />
     <Compile Include="Entities\TrnReceivingReceiptItem.cs" />
     <Compile Include="Program.cs" />
@@ -120,34 +110,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Data\POSDatabase.dbml">
+      <Generator>MSLinqToSQLGenerator</Generator>
+      <LastGenOutput>POSDatabase.designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
-    <None Include="Data\POSdb1.dbml">
-      <Generator>MSLinqToSQLGenerator</Generator>
-      <LastGenOutput>POSdb1.designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-      <CustomToolNamespace>POSdb1</CustomToolNamespace>
-    </None>
-    <None Include="Data\POSdb1.dbml.layout">
-      <DependentUpon>POSdb1.dbml</DependentUpon>
-    </None>
-    <None Include="Data\POSdb2.dbml">
-      <Generator>MSLinqToSQLGenerator</Generator>
-      <LastGenOutput>POSdb2.designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-      <CustomToolNamespace>POSdb2</CustomToolNamespace>
-    </None>
-    <None Include="Data\POSdb2.dbml.layout">
-      <DependentUpon>POSdb2.dbml</DependentUpon>
-    </None>
-    <None Include="Data\POSdb3.dbml">
-      <Generator>MSLinqToSQLGenerator</Generator>
-      <LastGenOutput>POSdb3.designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-      <CustomToolNamespace>POSdb3</CustomToolNamespace>
-    </None>
-    <None Include="Data\POSdb3.dbml.layout">
-      <DependentUpon>POSdb3.dbml</DependentUpon>
-    </None>
     <None Include="POSIntegrator_TemporaryKey.pfx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -168,6 +136,11 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\POSDatabase.dbml.layout">
+      <DependentUpon>POSDatabase.dbml</DependentUpon>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

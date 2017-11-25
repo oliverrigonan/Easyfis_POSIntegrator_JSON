@@ -73,5 +73,15 @@ namespace POSIntegrator.Properties {
                 return ((string)(this["pos13_S1ConnectionString1"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=localhost;Initial Catalog=pos13;User ID=sa")]
+        public string pos13ConnectionString1 {
+            get {
+                return ((string)(this["pos13ConnectionString1"]));
+            }
+        }
     }
 }
