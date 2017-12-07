@@ -82,16 +82,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controllers\Collection.cs" />
-    <Compile Include="Controllers\ReceivingReceipt.cs" />
-    <Compile Include="Controllers\StockOut.cs" />
-    <Compile Include="Controllers\StockTransferIn.cs" />
-    <Compile Include="Controllers\StockTransferOut.cs" />
+    <Compile Include="Controllers\TrnCollectionController.cs" />
+    <Compile Include="Controllers\MstItemController.cs" />
+    <Compile Include="Controllers\TrnReceivingReceiptController.cs" />
+    <Compile Include="Controllers\TrnStockOutController.cs" />
+    <Compile Include="Controllers\TrnStockTransferInController.cs" />
+    <Compile Include="Controllers\TrnStockTransferOutController.cs" />
     <Compile Include="Data\POSDatabase.designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>POSDatabase.dbml</DependentUpon>
     </Compile>
+    <Compile Include="Entities\MstItem.cs" />
+    <Compile Include="Entities\MstItemPrice.cs" />
     <Compile Include="Entities\TrnCollection.cs" />
     <Compile Include="Entities\TrnCollectionLines.cs" />
     <Compile Include="Entities\TrnReceivingReceipt.cs" />

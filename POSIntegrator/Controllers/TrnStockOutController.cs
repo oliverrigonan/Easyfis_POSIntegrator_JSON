@@ -8,7 +8,7 @@ using System.Web.Script.Serialization;
 
 namespace POSIntegrator.Controllers
 {
-    class StockOut
+    class TrnStockOutController
     {
         // ============
         // Data Context
@@ -50,7 +50,7 @@ namespace POSIntegrator.Controllers
                 {
                     var result = streamReader.ReadToEnd();
                     JavaScriptSerializer js = new JavaScriptSerializer();
-                    List<TrnStockOut> stockOutLists = (List<TrnStockOut>)js.Deserialize(result, typeof(List<TrnStockOut>));
+                    List<POSIntegrator.TrnStockOut> stockOutLists = (List<POSIntegrator.TrnStockOut>)js.Deserialize(result, typeof(List<POSIntegrator.TrnStockOut>));
 
                     foreach (var stockOutList in stockOutLists)
                     {
@@ -72,7 +72,7 @@ namespace POSIntegrator.Controllers
                             });
                         }
 
-                        var stockOutData = new TrnStockOut()
+                        var stockOutData = new POSIntegrator.TrnStockOut()
                         {
                             BranchCode = stockOutList.BranchCode,
                             Branch = stockOutList.Branch,
@@ -144,7 +144,7 @@ namespace POSIntegrator.Controllers
                     }
 
                     var json_serializer = new JavaScriptSerializer();
-                    TrnStockOut ot = json_serializer.Deserialize<TrnStockOut>(json);
+                    POSIntegrator.TrnStockOut ot = json_serializer.Deserialize<POSIntegrator.TrnStockOut>(json);
 
                     var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
                     posData = new Data.POSDatabaseDataContext(newConnectionString);

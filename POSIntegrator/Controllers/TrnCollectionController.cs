@@ -8,7 +8,7 @@ using System.Web.Script.Serialization;
 
 namespace POSIntegrator.Controllers
 {
-    class Collection
+    class TrnCollectionController
     {
         // ============
         // Data Context
@@ -52,7 +52,7 @@ namespace POSIntegrator.Controllers
                                 });
                             }
 
-                            var collectionData = new TrnCollection()
+                            var collectionData = new POSIntegrator.TrnCollection()
                             {
                                 SIDate = collection.CollectionDate.ToShortDateString(),
                                 BranchCode = branchCode,
@@ -109,7 +109,7 @@ namespace POSIntegrator.Controllers
                     using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
                     {
                         var json_serializer = new JavaScriptSerializer();
-                        TrnCollection c = json_serializer.Deserialize<TrnCollection>(json);
+                        POSIntegrator.TrnCollection c = json_serializer.Deserialize<POSIntegrator.TrnCollection>(json);
                         streamWriter.Write(new JavaScriptSerializer().Serialize(c));
                     }
                     var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
@@ -122,7 +122,7 @@ namespace POSIntegrator.Controllers
                         var result = streamReader.ReadToEnd();
 
                         var json_serializer = new JavaScriptSerializer();
-                        TrnCollection c = json_serializer.Deserialize<TrnCollection>(json);
+                        POSIntegrator.TrnCollection c = json_serializer.Deserialize<POSIntegrator.TrnCollection>(json);
 
                         Console.WriteLine("Collection Number " + c.DocumentReference + " was successfully sent!");
                         Console.WriteLine("Post Code: " + result.Replace("\"", ""));

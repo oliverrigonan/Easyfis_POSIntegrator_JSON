@@ -18,7 +18,7 @@ namespace POSIntegrator
         public static void Main(String[] args)
         {
             Int32 i = 0;
-            String apiUrlHost = "", database = "";
+            String apiUrlHost = "localhost:2651", database = "pos13_S1";
             foreach (var arg in args)
             {
                 if (i == 0) { apiUrlHost = arg; }
@@ -72,11 +72,12 @@ namespace POSIntegrator
                 Console.WriteLine("Invalid Database!");
             }
 
-            Controllers.Collection objCollection = new Controllers.Collection();
-            Controllers.StockTransferIn objStockTransferIn = new Controllers.StockTransferIn();
-            Controllers.StockTransferOut objStockTransferOut = new Controllers.StockTransferOut();
-            Controllers.StockOut objStockOut = new Controllers.StockOut();
-            Controllers.ReceivingReceipt objReceivingReceipt = new Controllers.ReceivingReceipt();
+            Controllers.TrnCollectionController objCollection = new Controllers.TrnCollectionController();
+            Controllers.TrnStockTransferInController objStockTransferIn = new Controllers.TrnStockTransferInController();
+            Controllers.TrnStockTransferOutController objStockTransferOut = new Controllers.TrnStockTransferOutController();
+            Controllers.TrnStockOutController objStockOut = new Controllers.TrnStockOutController();
+            Controllers.TrnReceivingReceiptController objReceivingReceipt = new Controllers.TrnReceivingReceiptController();
+            Controllers.MstItemController objItem = new Controllers.MstItemController();
 
             while (true)
             {
@@ -93,6 +94,7 @@ namespace POSIntegrator
                         objStockTransferOut.GetStockTransferOT(database, apiUrlHost, branchCode);
                         objStockOut.GetStockOut(database, apiUrlHost, branchCode);
                         objReceivingReceipt.GetReceivingReceipt(database, apiUrlHost, branchCode);
+                        objItem.GetItem(database, apiUrlHost);
                     }
                 }
 

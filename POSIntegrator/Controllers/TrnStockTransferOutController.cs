@@ -8,7 +8,7 @@ using System.Web.Script.Serialization;
 
 namespace POSIntegrator.Controllers
 {
-    class StockTransferOut
+    class TrnStockTransferOutController
     {
         // ============
         // Data Context
