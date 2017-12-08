@@ -78,6 +78,7 @@ namespace POSIntegrator.Controllers
                             Cost = itemList.Cost,
                             IsInventory = itemList.IsInventory,
                             Particulars = itemList.Particulars,
+                            OutputTax = itemList.OutputTax,
                             ListPOSIntegrationMstItemPrice = itemList.ListPOSIntegrationMstItemPrice.ToList()
                         };
 
@@ -169,6 +170,14 @@ namespace POSIntegrator.Controllers
 
                             if (!foundChanges)
                             {
+                                if (!items.FirstOrDefault().MstTax.Tax.Equals(itemList.OutputTax))
+                                {
+                                    foundChanges = true;
+                                }
+                            }
+
+                            if (!foundChanges)
+                            {
                                 if (items.FirstOrDefault().MstItemPrices.Any())
                                 {
                                     if (itemList.ListPOSIntegrationMstItemPrice.Any())
@@ -211,10 +220,24 @@ namespace POSIntegrator.Controllers
                         }
                         else
                         {
-                            File.WriteAllText(jsonFileName, json);
-                            Console.WriteLine("Saving new item ( " + itemList.Article + " )...");
+                            var units = from d in posData.MstUnits
+                                        where d.Unit.Equals(itemList.Unit)
+                                        select d;
 
-                            UpdateItem(database);
+                            if (units.Any())
+                            {
+                                var taxes = from d in posData.MstTaxes
+                                            where d.Tax.Equals(itemList.OutputTax)
+                                            select d;
+
+                                if (taxes.Any())
+                                {
+                                    File.WriteAllText(jsonFileName, json);
+                                    Console.WriteLine("Saving new item ( " + itemList.Article + " )...");
+
+                                    UpdateItem(database);
+                                }
+                            }
                         }
                     }
                 }
@@ -226,7 +249,7 @@ namespace POSIntegrator.Controllers
         }
 
         // ===========
-        // INSERT Item
+        // UPDATE Item
         // ===========
         public void UpdateItem(String database)
         {
@@ -234,6 +257,7 @@ namespace POSIntegrator.Controllers
             {
                 String jsonPath = "d:/innosoft/json/master";
                 List<String> files = new List<String>(Directory.EnumerateFiles(jsonPath));
+
                 foreach (var file in files)
                 {
                     // ==============
@@ -256,139 +280,97 @@ namespace POSIntegrator.Controllers
 
                     if (accounts.Any())
                     {
+                        String itemUnit = item.Unit;
+                        String itemOutputTax = item.OutputTax;
+
                         var units = from d in posData.MstUnits
-                                    where d.Unit.Equals(item.Unit)
+                                    where d.Unit.Equals(itemUnit)
                                     select d;
 
                         if (units.Any())
                         {
-                            var supplier = from d in posData.MstSuppliers
-                                           select d;
+                            var taxes = from d in posData.MstTaxes
+                                        where d.Tax.Equals(itemOutputTax)
+                                        select d;
 
-                            if (supplier.Any())
+                            if (taxes.Any())
                             {
-                                var items = from d in posData.MstItems
-                                            where d.BarCode.Equals(item.ManualArticleCode)
-                                            select d;
+                                var supplier = from d in posData.MstSuppliers
+                                               select d;
 
-                                if (!items.Any())
+                                if (supplier.Any())
                                 {
-                                    var defaultSettings = from d in posData.SysSettings select d;
+                                    var items = from d in posData.MstItems
+                                                where d.BarCode.Equals(item.ManualArticleCode)
+                                                select d;
 
-                                    var defaultItemCode = "000001";
-                                    var lastItem = from d in posData.MstItems.OrderByDescending(d => d.Id)
-                                                   select d;
-
-                                    if (lastItem.Any())
+                                    if (!items.Any())
                                     {
-                                        var OTNumber = Convert.ToInt32(lastItem.FirstOrDefault().ItemCode) + 000001;
-                                        defaultItemCode = FillLeadingZeroes(OTNumber, 6);
-                                    }
+                                        var defaultSettings = from d in posData.SysSettings select d;
 
-                                    Data.MstItem newItem = new Data.MstItem
-                                    {
-                                        ItemCode = defaultItemCode,
-                                        BarCode = item.ManualArticleCode,
-                                        ItemDescription = item.Article,
-                                        Alias = "NA",
-                                        GenericName = "NA",
-                                        Category = item.Category,
-                                        SalesAccountId = 159,
-                                        AssetAccountId = 74,
-                                        CostAccountId = 238,
-                                        InTaxId = 4,
-                                        OutTaxId = 4,
-                                        UnitId = units.FirstOrDefault().Id,
-                                        DefaultSupplierId = supplier.FirstOrDefault().Id,
-                                        Cost = item.Cost,
-                                        MarkUp = 0,
-                                        Price = item.Price,
-                                        ImagePath = "NA",
-                                        ReorderQuantity = 0,
-                                        OnhandQuantity = 0,
-                                        IsInventory = item.IsInventory,
-                                        ExpiryDate = DateTime.Now,
-                                        LotNumber = "NA",
-                                        Remarks = item.Particulars,
-                                        EntryUserId = defaultSettings.FirstOrDefault().PostUserId,
-                                        EntryDateTime = DateTime.Now,
-                                        UpdateUserId = defaultSettings.FirstOrDefault().PostUserId,
-                                        UpdateDateTime = DateTime.Now,
-                                        IsLocked = true,
-                                        DefaultKitchenReport = " ",
-                                        IsPackage = false
-                                    };
+                                        var defaultItemCode = "000001";
+                                        var lastItem = from d in posData.MstItems.OrderByDescending(d => d.Id)
+                                                       select d;
 
-                                    posData.MstItems.InsertOnSubmit(newItem);
-                                    posData.SubmitChanges();
-
-                                    foreach (var itemPrice in item.ListPOSIntegrationMstItemPrice.ToList())
-                                    {
-                                        Data.MstItemPrice newItemPrice = new Data.MstItemPrice
+                                        if (lastItem.Any())
                                         {
-                                            ItemId = newItem.Id,
-                                            PriceDescription = itemPrice.PriceDescription,
-                                            Price = itemPrice.Price,
-                                            TriggerQuantity = 0
+                                            var OTNumber = Convert.ToInt32(lastItem.FirstOrDefault().ItemCode) + 000001;
+                                            defaultItemCode = FillLeadingZeroes(OTNumber, 6);
+                                        }
+
+                                        Data.MstItem newItem = new Data.MstItem
+                                        {
+                                            ItemCode = defaultItemCode,
+                                            BarCode = item.ManualArticleCode,
+                                            ItemDescription = item.Article,
+                                            Alias = "NA",
+                                            GenericName = "NA",
+                                            Category = item.Category,
+                                            SalesAccountId = 159,
+                                            AssetAccountId = 74,
+                                            CostAccountId = 238,
+                                            InTaxId = 4,
+                                            OutTaxId = taxes.FirstOrDefault().Id,
+                                            UnitId = units.FirstOrDefault().Id,
+                                            DefaultSupplierId = supplier.FirstOrDefault().Id,
+                                            Cost = item.Cost,
+                                            MarkUp = 0,
+                                            Price = item.Price,
+                                            ImagePath = "NA",
+                                            ReorderQuantity = 0,
+                                            OnhandQuantity = 0,
+                                            IsInventory = item.IsInventory,
+                                            ExpiryDate = DateTime.Now,
+                                            LotNumber = "NA",
+                                            Remarks = item.Particulars,
+                                            EntryUserId = defaultSettings.FirstOrDefault().PostUserId,
+                                            EntryDateTime = DateTime.Now,
+                                            UpdateUserId = defaultSettings.FirstOrDefault().PostUserId,
+                                            UpdateDateTime = DateTime.Now,
+                                            IsLocked = true,
+                                            DefaultKitchenReport = " ",
+                                            IsPackage = false
                                         };
 
-                                        posData.MstItemPrices.InsertOnSubmit(newItemPrice);
-                                    }
-
-                                    posData.SubmitChanges();
-
-                                    Console.WriteLine("New item ( " + item.Article + " ) was successfully saved!");
-                                    Console.WriteLine("Barcode: " + item.ManualArticleCode);
-                                    Console.WriteLine();
-
-                                    File.Delete(file);
-                                }
-                                else
-                                {
-                                    var defaultSettings = from d in posData.SysSettings select d;
-
-                                    var updateItem = items.FirstOrDefault();
-                                    updateItem.BarCode = item.ManualArticleCode;
-                                    updateItem.ItemDescription = item.Article;
-                                    updateItem.Category = item.Category;
-                                    updateItem.UnitId = units.FirstOrDefault().Id;
-                                    updateItem.Price = item.Price;
-                                    updateItem.Cost = item.Cost;
-                                    updateItem.IsInventory = item.IsInventory;
-                                    updateItem.Remarks = item.Particulars;
-                                    updateItem.EntryDateTime = DateTime.Now;
-                                    updateItem.EntryUserId = defaultSettings.FirstOrDefault().PostUserId;
-                                    posData.SubmitChanges();
-
-
-                                    var itemPrices = from d in posData.MstItemPrices
-                                                     where d.ItemId == items.FirstOrDefault().Id
-                                                     select d;
-
-                                    if (itemPrices.Any())
-                                    {
-                                        posData.MstItemPrices.DeleteAllOnSubmit(itemPrices);
+                                        posData.MstItems.InsertOnSubmit(newItem);
                                         posData.SubmitChanges();
 
-                                        if (item.ListPOSIntegrationMstItemPrice.Any())
+                                        foreach (var itemPrice in item.ListPOSIntegrationMstItemPrice.ToList())
                                         {
-                                            foreach (var itemPrice in item.ListPOSIntegrationMstItemPrice.ToList())
+                                            Data.MstItemPrice newItemPrice = new Data.MstItemPrice
                                             {
-                                                Data.MstItemPrice newItemPrice = new Data.MstItemPrice
-                                                {
-                                                    ItemId = items.FirstOrDefault().Id,
-                                                    PriceDescription = itemPrice.PriceDescription,
-                                                    Price = itemPrice.Price,
-                                                    TriggerQuantity = 0
-                                                };
+                                                ItemId = newItem.Id,
+                                                PriceDescription = itemPrice.PriceDescription,
+                                                Price = itemPrice.Price,
+                                                TriggerQuantity = 0
+                                            };
 
-                                                posData.MstItemPrices.InsertOnSubmit(newItemPrice);
-                                            }
+                                            posData.MstItemPrices.InsertOnSubmit(newItemPrice);
                                         }
 
                                         posData.SubmitChanges();
 
-                                        Console.WriteLine("Item ( " + item.Article + " ) was successfully updated!");
+                                        Console.WriteLine("New item ( " + item.Article + " ) was successfully saved!");
                                         Console.WriteLine("Barcode: " + item.ManualArticleCode);
                                         Console.WriteLine();
 
@@ -396,33 +378,98 @@ namespace POSIntegrator.Controllers
                                     }
                                     else
                                     {
+                                        var defaultSettings = from d in posData.SysSettings select d;
 
-                                        if (item.ListPOSIntegrationMstItemPrice.Any())
-                                        {
-                                            foreach (var itemPrice in item.ListPOSIntegrationMstItemPrice.ToList())
-                                            {
-                                                Data.MstItemPrice newItemPrice = new Data.MstItemPrice
-                                                {
-                                                    ItemId = items.FirstOrDefault().Id,
-                                                    PriceDescription = itemPrice.PriceDescription,
-                                                    Price = itemPrice.Price,
-                                                    TriggerQuantity = 0
-                                                };
-
-                                                posData.MstItemPrices.InsertOnSubmit(newItemPrice);
-                                            }
-                                        }
-
+                                        var updateItem = items.FirstOrDefault();
+                                        updateItem.BarCode = item.ManualArticleCode;
+                                        updateItem.ItemDescription = item.Article;
+                                        updateItem.Category = item.Category;
+                                        updateItem.UnitId = units.FirstOrDefault().Id;
+                                        updateItem.Price = item.Price;
+                                        updateItem.Cost = item.Cost;
+                                        updateItem.IsInventory = item.IsInventory;
+                                        updateItem.Remarks = item.Particulars;
+                                        updateItem.OutTaxId = taxes.FirstOrDefault().Id;
+                                        updateItem.EntryDateTime = DateTime.Now;
+                                        updateItem.EntryUserId = defaultSettings.FirstOrDefault().PostUserId;
                                         posData.SubmitChanges();
 
-                                        Console.WriteLine("Item - " + item.Article + " was successfully updated!");
-                                        Console.WriteLine("Barcode: " + item.ManualArticleCode);
-                                        Console.WriteLine();
+                                        var itemPrices = from d in posData.MstItemPrices
+                                                         where d.ItemId == items.FirstOrDefault().Id
+                                                         select d;
 
-                                        File.Delete(file);
+                                        if (itemPrices.Any())
+                                        {
+                                            posData.MstItemPrices.DeleteAllOnSubmit(itemPrices);
+                                            posData.SubmitChanges();
+
+                                            if (item.ListPOSIntegrationMstItemPrice.Any())
+                                            {
+                                                foreach (var itemPrice in item.ListPOSIntegrationMstItemPrice.ToList())
+                                                {
+                                                    Data.MstItemPrice newItemPrice = new Data.MstItemPrice
+                                                    {
+                                                        ItemId = items.FirstOrDefault().Id,
+                                                        PriceDescription = itemPrice.PriceDescription,
+                                                        Price = itemPrice.Price,
+                                                        TriggerQuantity = 0
+                                                    };
+
+                                                    posData.MstItemPrices.InsertOnSubmit(newItemPrice);
+                                                }
+                                            }
+
+                                            posData.SubmitChanges();
+
+                                            Console.WriteLine("Item ( " + item.Article + " ) was successfully updated!");
+                                            Console.WriteLine("Barcode: " + item.ManualArticleCode);
+                                            Console.WriteLine();
+
+                                            File.Delete(file);
+                                        }
+                                        else
+                                        {
+                                            if (item.ListPOSIntegrationMstItemPrice.Any())
+                                            {
+                                                foreach (var itemPrice in item.ListPOSIntegrationMstItemPrice.ToList())
+                                                {
+                                                    Data.MstItemPrice newItemPrice = new Data.MstItemPrice
+                                                    {
+                                                        ItemId = items.FirstOrDefault().Id,
+                                                        PriceDescription = itemPrice.PriceDescription,
+                                                        Price = itemPrice.Price,
+                                                        TriggerQuantity = 0
+                                                    };
+
+                                                    posData.MstItemPrices.InsertOnSubmit(newItemPrice);
+                                                }
+                                            }
+
+                                            posData.SubmitChanges();
+
+                                            Console.WriteLine("Item - " + item.Article + " was successfully updated!");
+                                            Console.WriteLine("Barcode: " + item.ManualArticleCode);
+                                            Console.WriteLine();
+
+                                            File.Delete(file);
+                                        }
                                     }
                                 }
                             }
+                            else
+                            {
+                                Console.WriteLine("Cannot save or update item ( " + item.Article + " )! Output tax mismatch.");
+                                Console.WriteLine();
+
+                                File.Delete(file);
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Cannot save or update item ( " + item.Article + " )! Unit mismatch.");
+                            Console.WriteLine();
+
+                            File.Delete(file);
                         }
                     }
                 }
