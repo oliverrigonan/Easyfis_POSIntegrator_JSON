@@ -57,7 +57,7 @@ namespace POSIntegrator.Controllers
                     foreach (var itemList in itemLists)
                     {
                         List<MstItemPrice> ListItemPrices = new List<MstItemPrice>();
-                        foreach (var listItemPrice in itemList.ListPOSIntegrationMstItemPrice)
+                        foreach (var listItemPrice in itemList.ListPOSIntegrationMstItemPrice.ToList())
                         {
                             ListItemPrices.Add(new MstItemPrice()
                             {
@@ -162,9 +162,12 @@ namespace POSIntegrator.Controllers
 
                             if (!foundChanges)
                             {
-                                if (!items.FirstOrDefault().Remarks.Equals(itemList.Particulars))
+                                if (items.FirstOrDefault().Remarks != null)
                                 {
-                                    foundChanges = true;
+                                    if (!items.FirstOrDefault().Remarks.Equals(itemList.Particulars))
+                                    {
+                                        foundChanges = true;
+                                    }
                                 }
                             }
 
