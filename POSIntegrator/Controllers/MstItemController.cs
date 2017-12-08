@@ -173,30 +173,65 @@ namespace POSIntegrator.Controllers
 
                             if (!foundChanges)
                             {
-                                if (!items.FirstOrDefault().MstTax.Tax.Equals(itemList.OutputTax))
+                                var taxes = from d in posData.MstTaxes
+                                            where d.Tax.Equals(itemList.OutputTax)
+                                            select d;
+
+                                if (taxes.Any())
                                 {
-                                    foundChanges = true;
+                                    if (items.FirstOrDefault().OutTaxId != taxes.FirstOrDefault().Id)
+                                    {
+                                        foundChanges = true;
+                                    }
                                 }
                             }
 
                             if (!foundChanges)
                             {
-                                if (items.FirstOrDefault().MstItemPrices.Any())
+                                if (itemList.ListPOSIntegrationMstItemPrice.Any())
                                 {
-                                    if (itemList.ListPOSIntegrationMstItemPrice.Any())
+                                    if (items.FirstOrDefault().MstItemPrices.Any())
                                     {
-                                        foreach (var itemPrice in items.FirstOrDefault().MstItemPrices.ToList())
+                                        if (items.FirstOrDefault().MstItemPrices.Count != itemList.ListPOSIntegrationMstItemPrice.Count)
                                         {
-                                            var itemPrices = from d in itemList.ListPOSIntegrationMstItemPrice.ToList()
-                                                             where d.PriceDescription.Equals(itemPrice.PriceDescription)
-                                                             && d.Price == itemPrice.Price
-                                                             select d;
-
-                                            if (!itemPrices.Any())
+                                            foundChanges = true;
+                                        }
+                                        else
+                                        {
+                                            if (items.FirstOrDefault().MstItemPrices.Count >= itemList.ListPOSIntegrationMstItemPrice.Count)
                                             {
-                                                foundChanges = true;
-                                                break;
+                                                foreach (var itemPrice in items.FirstOrDefault().MstItemPrices.ToList())
+                                                {
+                                                    var itemListPrices = from d in itemList.ListPOSIntegrationMstItemPrice.ToList()
+                                                                         where d.PriceDescription.Equals(itemPrice.PriceDescription)
+                                                                         && d.Price == itemPrice.Price
+                                                                         select d;
+
+                                                    if (!itemListPrices.Any())
+                                                    {
+                                                        foundChanges = true;
+                                                    }
+                                                }
                                             }
+                                            else
+                                            {
+                                                if (items.FirstOrDefault().MstItemPrices.Count <= itemList.ListPOSIntegrationMstItemPrice.Count)
+                                                {
+                                                    foreach (var itemListPrice in itemList.ListPOSIntegrationMstItemPrice.ToList())
+                                                    {
+                                                        var itemPrices = from d in items.FirstOrDefault().MstItemPrices
+                                                                         where d.PriceDescription.Equals(itemListPrice.PriceDescription)
+                                                                         && d.Price == itemListPrice.Price
+                                                                         select d;
+
+                                                        if (!itemPrices.Any())
+                                                        {
+                                                            foundChanges = true;
+                                                        }
+                                                    }
+                                                }
+                                            }
+
                                         }
                                     }
                                     else
@@ -206,7 +241,7 @@ namespace POSIntegrator.Controllers
                                 }
                                 else
                                 {
-                                    if (itemList.ListPOSIntegrationMstItemPrice.Any())
+                                    if (items.FirstOrDefault().MstItemPrices.Any())
                                     {
                                         foundChanges = true;
                                     }
