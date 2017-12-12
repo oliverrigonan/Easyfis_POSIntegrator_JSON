@@ -18,7 +18,7 @@ namespace POSIntegrator
         public static void Main(String[] args)
         {
             Int32 i = 0;
-            String apiUrlHost = "", database = "";
+            String apiUrlHost = "localhost:2651", database = "pos13_3abuilders";
             foreach (var arg in args)
             {
                 if (i == 0) { apiUrlHost = arg; }
@@ -78,6 +78,8 @@ namespace POSIntegrator
             Controllers.TrnStockOutController objStockOut = new Controllers.TrnStockOutController();
             Controllers.TrnReceivingReceiptController objReceivingReceipt = new Controllers.TrnReceivingReceiptController();
             Controllers.MstItemController objItem = new Controllers.MstItemController();
+            Controllers.MstCustomerController objCustomer = new Controllers.MstCustomerController();
+            Controllers.MstSupplierController objSupplier = new Controllers.MstSupplierController();
 
             while (true)
             {
@@ -95,6 +97,8 @@ namespace POSIntegrator
                         objStockOut.GetStockOut(database, apiUrlHost, branchCode);
                         objReceivingReceipt.GetReceivingReceipt(database, apiUrlHost, branchCode);
                         objItem.GetItem(database, apiUrlHost);
+                        objCustomer.GetCustomer(database, apiUrlHost);
+                        objSupplier.GetSupplier(database, apiUrlHost);
                     }
                 }
 

@@ -83,7 +83,7 @@ namespace POSIntegrator.Controllers
                         };
 
                         String jsonPath = "d:/innosoft/json/master";
-                        String fileName = "item-" + itemList.ManualArticleCode + "-" + itemList.Article;
+                        String fileName = "item-" + itemList.Article;
 
                         foreach (char c in System.IO.Path.GetInvalidFileNameChars())
                         {
@@ -428,8 +428,8 @@ namespace POSIntegrator.Controllers
                                         updateItem.IsInventory = item.IsInventory;
                                         updateItem.Remarks = item.Particulars;
                                         updateItem.OutTaxId = taxes.FirstOrDefault().Id;
-                                        updateItem.EntryDateTime = DateTime.Now;
-                                        updateItem.EntryUserId = defaultSettings.FirstOrDefault().PostUserId;
+                                        updateItem.UpdateUserId = defaultSettings.FirstOrDefault().PostUserId;
+                                        updateItem.UpdateDateTime = DateTime.Now;
                                         posData.SubmitChanges();
 
                                         var itemPrices = from d in posData.MstItemPrices
