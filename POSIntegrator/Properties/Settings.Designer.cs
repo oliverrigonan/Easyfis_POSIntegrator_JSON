@@ -83,5 +83,25 @@ namespace POSIntegrator.Properties {
                 return ((string)(this["pos13ConnectionString1"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=localhost;Initial Catalog=pos;User ID=sa;Password=innosoft")]
+        public string posConnectionString {
+            get {
+                return ((string)(this["posConnectionString"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=localhost;Initial Catalog=pos;User ID=sa")]
+        public string posConnectionString1 {
+            get {
+                return ((string)(this["posConnectionString1"]));
+            }
+        }
     }
 }

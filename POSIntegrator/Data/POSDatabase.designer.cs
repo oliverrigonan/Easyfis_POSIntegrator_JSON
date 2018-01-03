@@ -22,7 +22,7 @@ namespace POSIntegrator.Data
 	using System;
 	
 	
-	[global::System.Data.Linq.Mapping.DatabaseAttribute(Name="pos13")]
+	[global::System.Data.Linq.Mapping.DatabaseAttribute(Name="pos")]
 	public partial class POSDatabaseDataContext : System.Data.Linq.DataContext
 	{
 		
@@ -162,7 +162,7 @@ namespace POSIntegrator.Data
     #endregion
 		
 		public POSDatabaseDataContext() : 
-				base(global::POSIntegrator.Properties.Settings.Default.pos13ConnectionString1, mappingSource)
+				base(global::POSIntegrator.Properties.Settings.Default.posConnectionString1, mappingSource)
 		{
 			OnCreated();
 		}
@@ -20512,7 +20512,7 @@ namespace POSIntegrator.Data
 		
 		private int _ApprovedBy;
 		
-		private int _IsLocked;
+		private bool _IsLocked;
 		
 		private int _EntryUserId;
 		
@@ -20562,7 +20562,7 @@ namespace POSIntegrator.Data
     partial void OnCheckedByChanged();
     partial void OnApprovedByChanging(int value);
     partial void OnApprovedByChanged();
-    partial void OnIsLockedChanging(int value);
+    partial void OnIsLockedChanging(bool value);
     partial void OnIsLockedChanged();
     partial void OnEntryUserIdChanging(int value);
     partial void OnEntryUserIdChanged();
@@ -20830,8 +20830,8 @@ namespace POSIntegrator.Data
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_IsLocked", DbType="Int NOT NULL")]
-		public int IsLocked
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_IsLocked", DbType="Bit NOT NULL")]
+		public bool IsLocked
 		{
 			get
 			{

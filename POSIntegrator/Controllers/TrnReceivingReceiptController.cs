@@ -191,7 +191,7 @@ namespace POSIntegrator.Controllers
                             PreparedBy = defaultSettings.FirstOrDefault().PostUserId,
                             CheckedBy = defaultSettings.FirstOrDefault().PostUserId,
                             ApprovedBy = defaultSettings.FirstOrDefault().PostUserId,
-                            IsLocked = 1,
+                            IsLocked = true,
                             EntryUserId = defaultSettings.FirstOrDefault().PostUserId,
                             EntryDateTime = DateTime.Now,
                             UpdateUserId = defaultSettings.FirstOrDefault().PostUserId,
