@@ -22,16 +22,22 @@ namespace POSIntegrator.Controllers
         {
             try
             {
+                String jsonPath = "d:/innosoft/json/SI";
+
                 var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
                 posData = new Data.POSDatabaseDataContext(newConnectionString);
 
-                String jsonPath = "d:/innosoft/json/SI";
-                var collections = from d in posData.TrnCollections where d.PostCode == null && d.CollectionNumber != "NA" select d;
+                var collections = from d in posData.TrnCollections
+                                  where d.PostCode == null
+                                  && d.CollectionNumber != "NA"
+                                  select d;
+
                 if (collections.Any())
                 {
                     foreach (var collection in collections)
                     {
                         List<TrnCollectionLines> listCollectionLines = new List<TrnCollectionLines>();
+
                         if (collection.TrnSale != null)
                         {
                             foreach (var salesLine in collection.TrnSale.TrnSalesLines)
@@ -67,13 +73,16 @@ namespace POSIntegrator.Controllers
 
                             String json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(collectionData);
                             String jsonFileName = jsonPath + "\\" + collection.CollectionNumber + ".json";
-                            File.WriteAllText(jsonFileName, json);
 
-                            Console.WriteLine("Sending Collection Number " + collection.CollectionNumber + "...");
-                            SendSIJsonFiles(jsonPath, apiUrlHost, database);
+                            if (!File.Exists(jsonFileName))
+                            {
+                                File.WriteAllText(jsonFileName, json);
+                            }
                         }
                     }
                 }
+
+                SendSIJsonFiles(database, apiUrlHost);
             }
             catch (Exception e)
             {
@@ -81,16 +90,20 @@ namespace POSIntegrator.Controllers
             }
         }
 
-        // ===============
-        // Send Json Files
-        // ===============
-        public void SendSIJsonFiles(String jsonPath, String apiUrlHost, String database)
+        // ==================
+        // Send SI Json Files
+        // ==================
+        public void SendSIJsonFiles(String database, String apiUrlHost)
         {
             try
             {
+                String jsonPath = "d:/innosoft/json/SI";
                 List<String> files = new List<String>(Directory.EnumerateFiles(jsonPath));
-                foreach (var file in files)
+
+                if (files.Any())
                 {
+                    var file = files.FirstOrDefault();
+
                     // ==============
                     // Read json file
                     // ==============
@@ -106,41 +119,47 @@ namespace POSIntegrator.Controllers
                     var httpWebRequest = (HttpWebRequest)WebRequest.Create("http://" + apiUrlHost + "/api/add/POSIntegration/salesInvoice");
                     httpWebRequest.ContentType = "application/json";
                     httpWebRequest.Method = "POST";
+
                     using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
                     {
                         var json_serializer = new JavaScriptSerializer();
                         POSIntegrator.TrnCollection c = json_serializer.Deserialize<POSIntegrator.TrnCollection>(json);
+
+                        Console.WriteLine("Sending Collection Number " + c.DocumentReference + "...");
                         streamWriter.Write(new JavaScriptSerializer().Serialize(c));
                     }
-                    var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
 
                     // ================
                     // Process response
                     // ================
+                    var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
                     using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
                     {
                         var result = streamReader.ReadToEnd();
-
-                        var json_serializer = new JavaScriptSerializer();
-                        POSIntegrator.TrnCollection c = json_serializer.Deserialize<POSIntegrator.TrnCollection>(json);
-
-                        Console.WriteLine("Collection Number " + c.DocumentReference + " was successfully sent!");
-                        Console.WriteLine("Post Code: " + result.Replace("\"", ""));
-                        Console.WriteLine();
-
-                        var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
-                        posData = new Data.POSDatabaseDataContext(newConnectionString);
-
-                        var collections = from d in posData.TrnCollections
-                                          where d.CollectionNumber.Equals(c.DocumentReference)
-                                          select d;
-
-                        if (collections.Any())
+                        if (result != null)
                         {
-                            var collection = collections.FirstOrDefault();
-                            collection.PostCode = result.Replace("\"", "");
-                            posData.SubmitChanges();
-                            File.Delete(file);
+                            var json_serializer = new JavaScriptSerializer();
+                            POSIntegrator.TrnCollection c = json_serializer.Deserialize<POSIntegrator.TrnCollection>(json);
+
+                            Console.WriteLine("Collection Number " + c.DocumentReference + " was successfully sent!");
+                            Console.WriteLine("Post Code: " + result.Replace("\"", ""));
+                            Console.WriteLine();
+
+                            var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
+                            posData = new Data.POSDatabaseDataContext(newConnectionString);
+
+                            var collections = from d in posData.TrnCollections
+                                              where d.CollectionNumber.Equals(c.DocumentReference)
+                                              select d;
+
+                            if (collections.Any())
+                            {
+                                var collection = collections.FirstOrDefault();
+                                collection.PostCode = result.Replace("\"", "");
+                                posData.SubmitChanges();
+
+                                File.Delete(file);
+                            }
                         }
                     }
                 }
