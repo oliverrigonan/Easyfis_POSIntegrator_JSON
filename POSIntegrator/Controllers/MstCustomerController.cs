@@ -253,7 +253,7 @@ namespace POSIntegrator.Controllers
                                 updateCustomer.TermId = terms.FirstOrDefault().Id;
                                 updateCustomer.UpdateUserId = defaultSettings.FirstOrDefault().PostUserId;
                                 updateCustomer.UpdateDateTime = DateTime.Now;
-                                updateCustomer.CustomerCode = customer.Article;
+                                updateCustomer.CustomerCode = customer.ManualArticleCode;
                                 posData.SubmitChanges();
 
                                 Console.WriteLine("Customer ( " + customer.Article + " ) was successfully updated!");
