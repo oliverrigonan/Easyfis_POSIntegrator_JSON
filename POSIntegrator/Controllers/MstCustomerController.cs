@@ -202,7 +202,7 @@ namespace POSIntegrator.Controllers
                         if (terms.Any())
                         {
                             var customers = from d in posData.MstCustomers
-                                            where d.Customer.Equals(customer.Article)
+                                            where d.Customer.Equals(customer.ManualArticleCode)
                                             select d;
 
                             if (!customers.Any())
