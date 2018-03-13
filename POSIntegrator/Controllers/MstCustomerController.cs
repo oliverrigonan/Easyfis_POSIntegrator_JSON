@@ -50,7 +50,7 @@ namespace POSIntegrator.Controllers
                         };
 
                         String jsonPath = "d:/innosoft/json/master";
-                        String fileName = "customer-" + customerList.Article;
+                        String fileName = "customer-" + customerList.ManualArticleCode;
 
                         foreach (char c in System.IO.Path.GetInvalidFileNameChars())
                         {
@@ -64,7 +64,7 @@ namespace POSIntegrator.Controllers
                         posData = new Data.POSDatabaseDataContext(newConnectionString);
 
                         var customers = from d in posData.MstCustomers
-                                        where d.Customer.Equals(customerList.Article)
+                                        where d.CustomerCode.Equals(customerList.ManualArticleCode)
                                         select d;
 
                         if (customers.Any())
@@ -202,7 +202,7 @@ namespace POSIntegrator.Controllers
                         if (terms.Any())
                         {
                             var customers = from d in posData.MstCustomers
-                                            where d.Customer.Equals(customer.ManualArticleCode)
+                                            where d.CustomerCode.Equals(customer.ManualArticleCode)
                                             select d;
 
                             if (!customers.Any())

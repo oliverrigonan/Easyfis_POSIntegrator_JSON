@@ -83,7 +83,7 @@ namespace POSIntegrator.Controllers
                         };
 
                         String jsonPath = "d:/innosoft/json/master";
-                        String fileName = "item-" + itemList.Article;
+                        String fileName = "item-" + itemList.ManualArticleCode;
 
                         foreach (char c in System.IO.Path.GetInvalidFileNameChars())
                         {
