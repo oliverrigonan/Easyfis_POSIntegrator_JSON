@@ -56,70 +56,75 @@ namespace POSIntegrator.Controllers
 
                     foreach (var receivingReceiptList in receivingReceiptLists)
                     {
-                        List<TrnReceivingReceiptItem> listReceivingReceiptItem = new List<TrnReceivingReceiptItem>();
-                        foreach (var receivingReceiptListItem in receivingReceiptList.ListPOSIntegrationTrnReceivingReceiptItem)
+                        if (receivingReceiptList.ListPOSIntegrationTrnReceivingReceiptItem.Any())
                         {
-                            listReceivingReceiptItem.Add(new TrnReceivingReceiptItem()
+                            List<TrnReceivingReceiptItem> listReceivingReceiptItem = new List<TrnReceivingReceiptItem>();
+                            foreach (var receivingReceiptListItem in receivingReceiptList.ListPOSIntegrationTrnReceivingReceiptItem)
                             {
-                                RRId = receivingReceiptListItem.RRId,
-                                ItemCode = receivingReceiptListItem.ItemCode,
-                                Item = receivingReceiptListItem.Item,
-                                Particulars = receivingReceiptListItem.Particulars,
-                                Unit = receivingReceiptListItem.Unit,
-                                Quantity = receivingReceiptListItem.Quantity,
-                                Cost = receivingReceiptListItem.Cost,
-                                Amount = receivingReceiptListItem.Amount,
-                                BaseUnit = receivingReceiptListItem.BaseUnit,
-                                BaseQuantity = receivingReceiptListItem.BaseQuantity,
-                                BaseCost = receivingReceiptListItem.BaseCost
-                            });
-                        }
+                                listReceivingReceiptItem.Add(new TrnReceivingReceiptItem()
+                                {
+                                    RRId = receivingReceiptListItem.RRId,
+                                    ItemCode = receivingReceiptListItem.ItemCode,
+                                    Item = receivingReceiptListItem.Item,
+                                    Particulars = receivingReceiptListItem.Particulars,
+                                    BranchCode = receivingReceiptListItem.BranchCode,
+                                    Branch = receivingReceiptListItem.Branch,
+                                    Unit = receivingReceiptListItem.Unit,
+                                    Quantity = receivingReceiptListItem.Quantity,
+                                    Cost = receivingReceiptListItem.Cost,
+                                    Amount = receivingReceiptListItem.Amount,
+                                    BaseUnit = receivingReceiptListItem.BaseUnit,
+                                    BaseQuantity = receivingReceiptListItem.BaseQuantity,
+                                    BaseCost = receivingReceiptListItem.BaseCost
+                                });
+                            }
 
-                        var stockTransferData = new POSIntegrator.TrnReceivingReceipt()
-                        {
-                            BranchCode = receivingReceiptList.BranchCode,
-                            Branch = receivingReceiptList.Branch,
-                            RRNumber = receivingReceiptList.RRNumber,
-                            RRDate = receivingReceiptList.RRDate,
-                            Supplier = receivingReceiptList.Supplier,
-                            Term = receivingReceiptList.Term,
-                            DocumentReference = receivingReceiptList.DocumentReference,
-                            ManualRRNumber = receivingReceiptList.ManualRRNumber,
-                            Remarks = receivingReceiptList.Remarks,
-                            PreparedBy = receivingReceiptList.PreparedBy,
-                            ReceivedBy = receivingReceiptList.PreparedBy,
-                            CheckedBy = receivingReceiptList.CheckedBy,
-                            ApprovedBy = receivingReceiptList.ApprovedBy,
-                            IsLocked = receivingReceiptList.IsLocked,
-                            CreatedBy = receivingReceiptList.CreatedBy,
-                            CreatedDateTime = receivingReceiptList.CreatedDateTime,
-                            UpdatedBy = receivingReceiptList.UpdatedBy,
-                            UpdatedDateTime = receivingReceiptList.UpdatedDateTime,
-                            ListPOSIntegrationTrnReceivingReceiptItem = receivingReceiptList.ListPOSIntegrationTrnReceivingReceiptItem.ToList()
-                        };
+                            var stockTransferData = new POSIntegrator.TrnReceivingReceipt()
+                            {
+                                BranchCode = receivingReceiptList.BranchCode,
+                                Branch = receivingReceiptList.Branch,
+                                RRNumber = receivingReceiptList.RRNumber,
+                                RRDate = receivingReceiptList.RRDate,
+                                Supplier = receivingReceiptList.Supplier,
+                                Term = receivingReceiptList.Term,
+                                DocumentReference = receivingReceiptList.DocumentReference,
+                                ManualRRNumber = receivingReceiptList.ManualRRNumber,
+                                Remarks = receivingReceiptList.Remarks,
+                                PreparedBy = receivingReceiptList.PreparedBy,
+                                ReceivedBy = receivingReceiptList.PreparedBy,
+                                CheckedBy = receivingReceiptList.CheckedBy,
+                                ApprovedBy = receivingReceiptList.ApprovedBy,
+                                IsLocked = receivingReceiptList.IsLocked,
+                                CreatedBy = receivingReceiptList.CreatedBy,
+                                CreatedDateTime = receivingReceiptList.CreatedDateTime,
+                                UpdatedBy = receivingReceiptList.UpdatedBy,
+                                UpdatedDateTime = receivingReceiptList.UpdatedDateTime,
+                                ListPOSIntegrationTrnReceivingReceiptItem = receivingReceiptList.ListPOSIntegrationTrnReceivingReceiptItem.ToList()
+                            };
 
-                        String jsonPath = "d:/innosoft/json/RR";
-                        String fileName = "RR-" + receivingReceiptList.BranchCode + "-" + receivingReceiptList.RRNumber;
+                            String jsonPath = "d:/innosoft/json/RR";
+                            String fileName = "RR-" + receivingReceiptList.BranchCode + "-" + receivingReceiptList.RRNumber;
 
-                        String json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(stockTransferData);
-                        String jsonFileName = jsonPath + "\\" + fileName + ".json";
-                        File.WriteAllText(jsonFileName, json);
+                            String json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(stockTransferData);
+                            String jsonFileName = jsonPath + "\\" + fileName + ".json";
+                            File.WriteAllText(jsonFileName, json);
 
-                        var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
-                        posData = new Data.POSDatabaseDataContext(newConnectionString);
+                            var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
+                            posData = new Data.POSDatabaseDataContext(newConnectionString);
 
-                        var stockIn = from d in posData.TrnStockIns
-                                      where d.Remarks.Equals(fileName)
-                                      select d;
+                            var stockIn = from d in posData.TrnStockIns
+                                          where d.Remarks.Equals(fileName)
+                                          select d;
 
-                        if (!stockIn.Any())
-                        {
-                            Console.WriteLine("Saving Receiving Receipt - " + fileName + "...");
-                            InsertReceivingReceipt(database);
-                        }
-                        else
-                        {
-                            File.Delete(jsonFileName);
+                            if (!stockIn.Any())
+                            {
+                                Console.WriteLine("Saving Receiving Receipt - " + fileName + "...");
+                                InsertReceivingReceipt(database);
+                            }
+                            else
+                            {
+                                File.Delete(jsonFileName);
+                            }
                         }
                     }
                 }
