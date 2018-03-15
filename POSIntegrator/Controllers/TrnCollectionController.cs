@@ -36,6 +36,20 @@ namespace POSIntegrator.Controllers
                 {
                     foreach (var collection in collections)
                     {
+                        var listPayTypes = new List<String>();
+
+                        if (collection.TrnCollectionLines.Any())
+                        {
+                            foreach (var collectionLine in collection.TrnCollectionLines)
+                            {
+                                if (collectionLine.Amount > 0)
+                                {
+                                    listPayTypes.Add(collectionLine.MstPayType.PayType + ": " + collectionLine.Amount.ToString("#,##0.00"));
+                                }
+                            }
+                        }
+
+                        String[] payTypes = listPayTypes.ToArray();
                         List<TrnCollectionLines> listCollectionLines = new List<TrnCollectionLines>();
 
                         if (collection.TrnSale != null)
@@ -67,7 +81,7 @@ namespace POSIntegrator.Controllers
                                 Term = collection.TrnSale.MstTerm.Term,
                                 DocumentReference = collection.CollectionNumber,
                                 ManualSINumber = collection.TrnSale.SalesNumber,
-                                Remarks = collection.MstUser4.UserName,
+                                Remarks = "User: " + collection.MstUser4.UserName + ", " + String.Join(", ", payTypes),
                                 ListPOSIntegrationTrnSalesInvoiceItem = listCollectionLines.ToList()
                             };
 
