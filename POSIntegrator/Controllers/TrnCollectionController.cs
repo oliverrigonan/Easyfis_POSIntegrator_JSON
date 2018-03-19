@@ -139,7 +139,7 @@ namespace POSIntegrator.Controllers
                         var json_serializer = new JavaScriptSerializer();
                         POSIntegrator.TrnCollection c = json_serializer.Deserialize<POSIntegrator.TrnCollection>(json);
 
-                        Console.WriteLine("Sending Collection Number " + c.DocumentReference + "...");
+                        Console.WriteLine("Sending Collection...");
                         streamWriter.Write(new JavaScriptSerializer().Serialize(c));
                     }
 
@@ -155,8 +155,12 @@ namespace POSIntegrator.Controllers
                             var json_serializer = new JavaScriptSerializer();
                             POSIntegrator.TrnCollection c = json_serializer.Deserialize<POSIntegrator.TrnCollection>(json);
 
-                            Console.WriteLine("Collection Number " + c.DocumentReference + " was successfully sent!");
+                            Console.WriteLine("Collection No.: " + c.DocumentReference);
+                            Console.WriteLine("Customer Code: " + c.CustomerManualArticleCode);
+                            Console.WriteLine("Sales No.: " + c.ManualSINumber);
+                            Console.WriteLine("Remarks: " + c.Remarks);
                             Console.WriteLine("Post Code: " + result.Replace("\"", ""));
+                            Console.WriteLine("Sent Succesful!");
                             Console.WriteLine();
 
                             var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
@@ -177,10 +181,34 @@ namespace POSIntegrator.Controllers
                         }
                     }
                 }
+
             }
-            catch (Exception e)
+            catch (WebException we)
             {
-                Console.WriteLine(e);
+                var resp = new StreamReader(we.Response.GetResponseStream()).ReadToEnd();
+
+                String jsonPath = "d:/innosoft/json/SI";
+                List<String> files = new List<String>(Directory.EnumerateFiles(jsonPath));
+                if (files.Any())
+                {
+                    var file = files.FirstOrDefault();
+
+                    String json;
+                    using (StreamReader r = new StreamReader(file))
+                    {
+                        json = r.ReadToEnd();
+                    }
+
+                    var json_serializer = new JavaScriptSerializer();
+                    POSIntegrator.TrnCollection c = json_serializer.Deserialize<POSIntegrator.TrnCollection>(json);
+
+                    Console.WriteLine("Collection No.: " + c.DocumentReference);
+                    Console.WriteLine("Customer Code: " + c.CustomerManualArticleCode);
+                    Console.WriteLine("Sales No.: " + c.ManualSINumber);
+                    Console.WriteLine("Remarks: " + c.Remarks);
+                    Console.WriteLine(resp.Replace("\"", ""));
+                    Console.WriteLine();
+                }
             }
         }
     }
