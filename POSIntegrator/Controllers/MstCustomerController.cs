@@ -134,6 +134,7 @@ namespace POSIntegrator.Controllers
                             {
                                 File.WriteAllText(jsonFileName, json);
                                 Console.WriteLine("Updating existing customer...");
+                                Console.WriteLine("Customer: " + customerList.Article);
 
                                 UpdateCustomer(database);
                             }
@@ -147,7 +148,8 @@ namespace POSIntegrator.Controllers
                             if (terms.Any())
                             {
                                 File.WriteAllText(jsonFileName, json);
-                                Console.WriteLine("Saving new customer ( " + customerList.Article + " )...");
+                                Console.WriteLine("Saving new customer...");
+                                Console.WriteLine("Customer: " + customerList.Article);
 
                                 UpdateCustomer(database);
                             }
@@ -234,8 +236,7 @@ namespace POSIntegrator.Controllers
                                 posData.MstCustomers.InsertOnSubmit(newCustomer);
                                 posData.SubmitChanges();
 
-                                Console.WriteLine("New customer ( " + customer.Article + " ) was successfully saved!");
-                                Console.WriteLine("Customer Name: " + customer.Article);
+                                Console.WriteLine("Save Successful!");
                                 Console.WriteLine();
 
                                 File.Delete(file);
@@ -256,8 +257,7 @@ namespace POSIntegrator.Controllers
                                 updateCustomer.CustomerCode = customer.ManualArticleCode;
                                 posData.SubmitChanges();
 
-                                Console.WriteLine("Customer ( " + customer.Article + " ) was successfully updated!");
-                                Console.WriteLine("Customer Name: " + customer.Article);
+                                Console.WriteLine("Update Successful!");
                                 Console.WriteLine();
 
                                 File.Delete(file);
@@ -265,7 +265,7 @@ namespace POSIntegrator.Controllers
                         }
                         else
                         {
-                            Console.WriteLine("Cannot save or update customer ( " + customer.Article + " )! Term mismatch.");
+                            Console.WriteLine("Save failed! Term mismatch!");
                             Console.WriteLine();
 
                             File.Delete(file);

@@ -18,7 +18,7 @@ namespace POSIntegrator
         public static void Main(String[] args)
         {
             Int32 i = 0;
-            String apiUrlHost = "", database = "";
+            String apiUrlHost = "localhost:2651", database = "pos";
             foreach (var arg in args)
             {
                 if (i == 0) { apiUrlHost = arg; }
@@ -27,7 +27,7 @@ namespace POSIntegrator
             }
 
             Console.WriteLine("===========================================");
-            Console.WriteLine("Innosoft POS Uploader - Version: 1.20171107");
+            Console.WriteLine("Innosoft POS Uploader - Version: 1.20180319");
             Console.WriteLine("===========================================");
 
             Console.WriteLine();
@@ -77,6 +77,7 @@ namespace POSIntegrator
             Controllers.TrnStockTransferOutController objStockTransferOut = new Controllers.TrnStockTransferOutController();
             Controllers.TrnStockOutController objStockOut = new Controllers.TrnStockOutController();
             Controllers.TrnReceivingReceiptController objReceivingReceipt = new Controllers.TrnReceivingReceiptController();
+            Controllers.TrnArticlePriceController objArticlePrice = new Controllers.TrnArticlePriceController();
             Controllers.MstItemController objItem = new Controllers.MstItemController();
             Controllers.MstCustomerController objCustomer = new Controllers.MstCustomerController();
             Controllers.MstSupplierController objSupplier = new Controllers.MstSupplierController();
@@ -96,6 +97,7 @@ namespace POSIntegrator
                         objStockTransferOut.GetStockTransferOT(database, apiUrlHost, branchCode);
                         objStockOut.GetStockOut(database, apiUrlHost, branchCode);
                         objReceivingReceipt.GetReceivingReceipt(database, apiUrlHost, branchCode);
+                        objArticlePrice.GetItemPrice(database, apiUrlHost, branchCode);
                         objItem.GetItem(database, apiUrlHost);
                         objCustomer.GetCustomer(database, apiUrlHost);
                         objSupplier.GetSupplier(database, apiUrlHost);

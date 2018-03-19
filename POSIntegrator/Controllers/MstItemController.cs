@@ -186,72 +186,74 @@ namespace POSIntegrator.Controllers
                                 }
                             }
 
-                            if (!foundChanges)
-                            {
-                                if (itemList.ListPOSIntegrationMstItemPrice.Any())
-                                {
-                                    if (items.FirstOrDefault().MstItemPrices.Any())
-                                    {
-                                        if (items.FirstOrDefault().MstItemPrices.Count != itemList.ListPOSIntegrationMstItemPrice.Count)
-                                        {
-                                            foundChanges = true;
-                                        }
-                                        else
-                                        {
-                                            if (items.FirstOrDefault().MstItemPrices.Count >= itemList.ListPOSIntegrationMstItemPrice.Count)
-                                            {
-                                                foreach (var itemPrice in items.FirstOrDefault().MstItemPrices.ToList())
-                                                {
-                                                    var itemListPrices = from d in itemList.ListPOSIntegrationMstItemPrice.ToList()
-                                                                         where d.PriceDescription.Equals(itemPrice.PriceDescription)
-                                                                         && d.Price == itemPrice.Price
-                                                                         select d;
+                            //if (!foundChanges)
+                            //{
+                            //    if (itemList.ListPOSIntegrationMstItemPrice.Any())
+                            //    {
+                            //        if (items.FirstOrDefault().MstItemPrices.Any())
+                            //        {
+                            //            if (items.FirstOrDefault().MstItemPrices.Count != itemList.ListPOSIntegrationMstItemPrice.Count)
+                            //            {
+                            //                foundChanges = true;
+                            //            }
+                            //            else
+                            //            {
+                            //                if (items.FirstOrDefault().MstItemPrices.Count >= itemList.ListPOSIntegrationMstItemPrice.Count)
+                            //                {
+                            //                    foreach (var itemPrice in items.FirstOrDefault().MstItemPrices.ToList())
+                            //                    {
+                            //                        var itemListPrices = from d in itemList.ListPOSIntegrationMstItemPrice.ToList()
+                            //                                             where d.PriceDescription.Equals(itemPrice.PriceDescription)
+                            //                                             && d.Price == itemPrice.Price
+                            //                                             select d;
 
-                                                    if (!itemListPrices.Any())
-                                                    {
-                                                        foundChanges = true;
-                                                    }
-                                                }
-                                            }
-                                            else
-                                            {
-                                                if (items.FirstOrDefault().MstItemPrices.Count <= itemList.ListPOSIntegrationMstItemPrice.Count)
-                                                {
-                                                    foreach (var itemListPrice in itemList.ListPOSIntegrationMstItemPrice.ToList())
-                                                    {
-                                                        var itemPrices = from d in items.FirstOrDefault().MstItemPrices
-                                                                         where d.PriceDescription.Equals(itemListPrice.PriceDescription)
-                                                                         && d.Price == itemListPrice.Price
-                                                                         select d;
+                            //                        if (!itemListPrices.Any())
+                            //                        {
+                            //                            foundChanges = true;
+                            //                        }
+                            //                    }
+                            //                }
+                            //                else
+                            //                {
+                            //                    if (items.FirstOrDefault().MstItemPrices.Count <= itemList.ListPOSIntegrationMstItemPrice.Count)
+                            //                    {
+                            //                        foreach (var itemListPrice in itemList.ListPOSIntegrationMstItemPrice.ToList())
+                            //                        {
+                            //                            var itemPrices = from d in items.FirstOrDefault().MstItemPrices
+                            //                                             where d.PriceDescription.Equals(itemListPrice.PriceDescription)
+                            //                                             && d.Price == itemListPrice.Price
+                            //                                             select d;
 
-                                                        if (!itemPrices.Any())
-                                                        {
-                                                            foundChanges = true;
-                                                        }
-                                                    }
-                                                }
-                                            }
+                            //                            if (!itemPrices.Any())
+                            //                            {
+                            //                                foundChanges = true;
+                            //                            }
+                            //                        }
+                            //                    }
+                            //                }
 
-                                        }
-                                    }
-                                    else
-                                    {
-                                        foundChanges = true;
-                                    }
-                                }
-                                else
-                                {
-                                    if (items.FirstOrDefault().MstItemPrices.Any())
-                                    {
-                                        foundChanges = true;
-                                    }
-                                }
-                            }
+                            //            }
+                            //        }
+                            //        else
+                            //        {
+                            //            foundChanges = true;
+                            //        }
+                            //    }
+                            //    else
+                            //    {
+                            //        if (items.FirstOrDefault().MstItemPrices.Any())
+                            //        {
+                            //            foundChanges = true;
+                            //        }
+                            //    }
+                            //}
 
                             if (foundChanges)
                             {
                                 File.WriteAllText(jsonFileName, json);
                                 Console.WriteLine("Updating existing item...");
+                                Console.WriteLine("Barcode: " + itemList.ManualArticleCode);
+                                Console.WriteLine("Item: " + itemList.Article);
 
                                 UpdateItem(database);
                             }
@@ -271,7 +273,9 @@ namespace POSIntegrator.Controllers
                                 if (taxes.Any())
                                 {
                                     File.WriteAllText(jsonFileName, json);
-                                    Console.WriteLine("Saving new item ( " + itemList.Article + " )...");
+                                    Console.WriteLine("Saving new item...");
+                                    Console.WriteLine("Barcode: " + itemList.ManualArticleCode);
+                                    Console.WriteLine("Item: " + itemList.Article);
 
                                     UpdateItem(database);
                                 }
@@ -362,7 +366,7 @@ namespace POSIntegrator.Controllers
                                             BarCode = item.ManualArticleCode,
                                             ItemDescription = item.Article,
                                             Alias = "NA",
-                                            GenericName = "NA",
+                                            GenericName = item.Article,
                                             Category = item.Category,
                                             SalesAccountId = 159,
                                             AssetAccountId = 74,
@@ -393,23 +397,7 @@ namespace POSIntegrator.Controllers
                                         posData.MstItems.InsertOnSubmit(newItem);
                                         posData.SubmitChanges();
 
-                                        foreach (var itemPrice in item.ListPOSIntegrationMstItemPrice.ToList())
-                                        {
-                                            Data.MstItemPrice newItemPrice = new Data.MstItemPrice
-                                            {
-                                                ItemId = newItem.Id,
-                                                PriceDescription = itemPrice.PriceDescription,
-                                                Price = itemPrice.Price,
-                                                TriggerQuantity = 0
-                                            };
-
-                                            posData.MstItemPrices.InsertOnSubmit(newItemPrice);
-                                        }
-
-                                        posData.SubmitChanges();
-
-                                        Console.WriteLine("New item ( " + item.Article + " ) was successfully saved!");
-                                        Console.WriteLine("Barcode: " + item.ManualArticleCode);
+                                        Console.WriteLine("Save Successful!");
                                         Console.WriteLine();
 
                                         File.Delete(file);
@@ -432,71 +420,16 @@ namespace POSIntegrator.Controllers
                                         updateItem.UpdateDateTime = DateTime.Now;
                                         posData.SubmitChanges();
 
-                                        var itemPrices = from d in posData.MstItemPrices
-                                                         where d.ItemId == items.FirstOrDefault().Id
-                                                         select d;
+                                        Console.WriteLine("Update Successful!");
+                                        Console.WriteLine();
 
-                                        if (itemPrices.Any())
-                                        {
-                                            posData.MstItemPrices.DeleteAllOnSubmit(itemPrices);
-                                            posData.SubmitChanges();
-
-                                            if (item.ListPOSIntegrationMstItemPrice.Any())
-                                            {
-                                                foreach (var itemPrice in item.ListPOSIntegrationMstItemPrice.ToList())
-                                                {
-                                                    Data.MstItemPrice newItemPrice = new Data.MstItemPrice
-                                                    {
-                                                        ItemId = items.FirstOrDefault().Id,
-                                                        PriceDescription = itemPrice.PriceDescription,
-                                                        Price = itemPrice.Price,
-                                                        TriggerQuantity = 0
-                                                    };
-
-                                                    posData.MstItemPrices.InsertOnSubmit(newItemPrice);
-                                                }
-                                            }
-
-                                            posData.SubmitChanges();
-
-                                            Console.WriteLine("Item ( " + item.Article + " ) was successfully updated!");
-                                            Console.WriteLine("Barcode: " + item.ManualArticleCode);
-                                            Console.WriteLine();
-
-                                            File.Delete(file);
-                                        }
-                                        else
-                                        {
-                                            if (item.ListPOSIntegrationMstItemPrice.Any())
-                                            {
-                                                foreach (var itemPrice in item.ListPOSIntegrationMstItemPrice.ToList())
-                                                {
-                                                    Data.MstItemPrice newItemPrice = new Data.MstItemPrice
-                                                    {
-                                                        ItemId = items.FirstOrDefault().Id,
-                                                        PriceDescription = itemPrice.PriceDescription,
-                                                        Price = itemPrice.Price,
-                                                        TriggerQuantity = 0
-                                                    };
-
-                                                    posData.MstItemPrices.InsertOnSubmit(newItemPrice);
-                                                }
-                                            }
-
-                                            posData.SubmitChanges();
-
-                                            Console.WriteLine("Item - " + item.Article + " was successfully updated!");
-                                            Console.WriteLine("Barcode: " + item.ManualArticleCode);
-                                            Console.WriteLine();
-
-                                            File.Delete(file);
-                                        }
+                                        File.Delete(file);
                                     }
                                 }
                             }
                             else
                             {
-                                Console.WriteLine("Cannot save or update item ( " + item.Article + " )! Output tax mismatch.");
+                                Console.WriteLine("Save failed! Output tax mismatch.");
                                 Console.WriteLine();
 
                                 File.Delete(file);
@@ -504,7 +437,7 @@ namespace POSIntegrator.Controllers
                         }
                         else
                         {
-                            Console.WriteLine("Cannot save or update item ( " + item.Article + " )! Unit mismatch.");
+                            Console.WriteLine("Save failed! Unit mismatch.");
                             Console.WriteLine();
 
                             File.Delete(file);

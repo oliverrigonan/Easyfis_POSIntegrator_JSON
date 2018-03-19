@@ -84,6 +84,7 @@
   <ItemGroup>
     <Compile Include="Controllers\MstCustomerController.cs" />
     <Compile Include="Controllers\MstSupplierController.cs" />
+    <Compile Include="Controllers\TrnArticlePriceController.cs" />
     <Compile Include="Controllers\TrnCollectionController.cs" />
     <Compile Include="Controllers\MstItemController.cs" />
     <Compile Include="Controllers\TrnReceivingReceiptController.cs" />
@@ -99,6 +100,7 @@
     <Compile Include="Entities\MstItem.cs" />
     <Compile Include="Entities\MstItemPrice.cs" />
     <Compile Include="Entities\MstSupplier.cs" />
+    <Compile Include="Entities\TrnArticlePrice.cs" />
     <Compile Include="Entities\TrnCollection.cs" />
     <Compile Include="Entities\TrnCollectionLines.cs" />
     <Compile Include="Entities\TrnReceivingReceipt.cs" />

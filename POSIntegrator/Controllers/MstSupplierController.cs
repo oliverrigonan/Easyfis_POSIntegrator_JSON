@@ -113,6 +113,7 @@ namespace POSIntegrator.Controllers
                             {
                                 File.WriteAllText(jsonFileName, json);
                                 Console.WriteLine("Updating existing supplier...");
+                                Console.WriteLine("Supplier: " + supplierList.Article);
 
                                 UpdateSupplier(database);
                             }
@@ -126,7 +127,8 @@ namespace POSIntegrator.Controllers
                             if (terms.Any())
                             {
                                 File.WriteAllText(jsonFileName, json);
-                                Console.WriteLine("Saving new supplier ( " + supplierList.Article + " )...");
+                                Console.WriteLine("Saving new supplier...");
+                                Console.WriteLine("Supplier: " + supplierList.Article);
 
                                 UpdateSupplier(database);
                             }
@@ -208,8 +210,7 @@ namespace POSIntegrator.Controllers
                                 posData.MstSuppliers.InsertOnSubmit(newSupplier);
                                 posData.SubmitChanges();
 
-                                Console.WriteLine("New supplier ( " + supplier.Article + " ) was successfully saved!");
-                                Console.WriteLine("Supplier Name: " + supplier.Article);
+                                Console.WriteLine("Save Successful!");
                                 Console.WriteLine();
 
                                 File.Delete(file);
@@ -228,8 +229,7 @@ namespace POSIntegrator.Controllers
                                 updateSupplier.UpdateDateTime = DateTime.Now;
                                 posData.SubmitChanges();
 
-                                Console.WriteLine("Supplier ( " + supplier.Article + " ) was successfully updated!");
-                                Console.WriteLine("Supplier Name: " + supplier.Article);
+                                Console.WriteLine("Update Successful!");
                                 Console.WriteLine();
 
                                 File.Delete(file);
@@ -237,7 +237,7 @@ namespace POSIntegrator.Controllers
                         }
                         else
                         {
-                            Console.WriteLine("Cannot save or update supplier ( " + supplier.Article + " )! Term mismatch.");
+                            Console.WriteLine("Save failed! Term mismatch.");
                             Console.WriteLine();
 
                             File.Delete(file);
