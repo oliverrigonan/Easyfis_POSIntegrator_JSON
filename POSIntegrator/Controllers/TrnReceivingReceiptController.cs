@@ -114,11 +114,12 @@ namespace POSIntegrator.Controllers
 
                             var stockIn = from d in posData.TrnStockIns
                                           where d.Remarks.Equals(fileName)
+                                          && d.TrnStockInLines.Count() > 0
                                           select d;
 
                             if (!stockIn.Any())
                             {
-                                Console.WriteLine("Saving Receiving Receipt - " + fileName + "...");
+                                Console.WriteLine("Saving Receiving Receipt...");
                                 InsertReceivingReceipt(database);
                             }
                             else
@@ -164,6 +165,7 @@ namespace POSIntegrator.Controllers
                     String fileName = "RR-" + rr.BranchCode + "-" + rr.RRNumber;
                     var stockIn = from d in posData.TrnStockIns
                                   where d.Remarks.Equals(fileName)
+                                  && d.TrnStockInLines.Count() > 0
                                   select d;
 
                     if (!stockIn.Any())
@@ -251,8 +253,9 @@ namespace POSIntegrator.Controllers
                                     }
 
                                     posData.SubmitChanges();
-                                    Console.WriteLine("Receiving Receipt - " + fileName + " was successfully saved!");
+                                    Console.WriteLine("Receiving Receipt: " + fileName);
                                     Console.WriteLine("Remarks: " + fileName);
+                                    Console.WriteLine("Save Successful!");
                                     Console.WriteLine();
 
                                     File.Delete(file);

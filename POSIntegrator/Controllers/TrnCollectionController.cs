@@ -181,7 +181,6 @@ namespace POSIntegrator.Controllers
                         }
                     }
                 }
-
             }
             catch (WebException we)
             {

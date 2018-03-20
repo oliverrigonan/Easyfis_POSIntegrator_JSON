@@ -133,8 +133,7 @@ namespace POSIntegrator.Controllers
                             if (foundChanges)
                             {
                                 File.WriteAllText(jsonFileName, json);
-                                Console.WriteLine("Updating existing customer...");
-                                Console.WriteLine("Customer: " + customerList.Article);
+                                Console.WriteLine("Updating Customer...");
 
                                 UpdateCustomer(database);
                             }
@@ -148,8 +147,7 @@ namespace POSIntegrator.Controllers
                             if (terms.Any())
                             {
                                 File.WriteAllText(jsonFileName, json);
-                                Console.WriteLine("Saving new customer...");
-                                Console.WriteLine("Customer: " + customerList.Article);
+                                Console.WriteLine("Saving Customer...");
 
                                 UpdateCustomer(database);
                             }
@@ -236,6 +234,7 @@ namespace POSIntegrator.Controllers
                                 posData.MstCustomers.InsertOnSubmit(newCustomer);
                                 posData.SubmitChanges();
 
+                                Console.WriteLine("Customer: " + customer.Article);
                                 Console.WriteLine("Save Successful!");
                                 Console.WriteLine();
 
@@ -257,6 +256,7 @@ namespace POSIntegrator.Controllers
                                 updateCustomer.CustomerCode = customer.ManualArticleCode;
                                 posData.SubmitChanges();
 
+                                Console.WriteLine("Customer: " + customer.Article);
                                 Console.WriteLine("Update Successful!");
                                 Console.WriteLine();
 
@@ -265,7 +265,8 @@ namespace POSIntegrator.Controllers
                         }
                         else
                         {
-                            Console.WriteLine("Save failed! Term mismatch!");
+                            Console.WriteLine("Customer: " + customer.Article);
+                            Console.WriteLine("Save Failed! Term Mismatch!");
                             Console.WriteLine();
 
                             File.Delete(file);

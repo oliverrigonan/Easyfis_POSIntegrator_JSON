@@ -108,11 +108,12 @@ namespace POSIntegrator.Controllers
 
                         var stockIn = from d in posData.TrnStockIns
                                       where d.Remarks.Equals(fileName)
+                                      && d.TrnStockInLines.Count() > 0
                                       select d;
 
                         if (!stockIn.Any())
                         {
-                            Console.WriteLine("Saving Stock Transfer (IN) - " + fileName + "...");
+                            Console.WriteLine("Saving Stock Transfer (IN)...");
                             InsertStockTransferIN(database);
                         }
                         else
@@ -157,6 +158,7 @@ namespace POSIntegrator.Controllers
                     String fileName = "ST-" + st.BranchCode + "-" + st.STNumber;
                     var stockIn = from d in posData.TrnStockIns
                                   where d.Remarks.Equals(fileName)
+                                  && d.TrnStockInLines.Count() > 0
                                   select d;
 
                     if (!stockIn.Any())
@@ -244,8 +246,9 @@ namespace POSIntegrator.Controllers
                                     }
 
                                     posData.SubmitChanges();
-                                    Console.WriteLine("Stock Transfer (IN) - " + fileName + " was successfully saved!");
+                                    Console.WriteLine("Stock Transfer (IN): " + fileName);
                                     Console.WriteLine("Remarks: " + fileName);
+                                    Console.WriteLine("Save Successful!");
                                     Console.WriteLine();
 
                                     File.Delete(file);

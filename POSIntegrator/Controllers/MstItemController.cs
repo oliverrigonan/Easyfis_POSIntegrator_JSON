@@ -186,74 +186,10 @@ namespace POSIntegrator.Controllers
                                 }
                             }
 
-                            //if (!foundChanges)
-                            //{
-                            //    if (itemList.ListPOSIntegrationMstItemPrice.Any())
-                            //    {
-                            //        if (items.FirstOrDefault().MstItemPrices.Any())
-                            //        {
-                            //            if (items.FirstOrDefault().MstItemPrices.Count != itemList.ListPOSIntegrationMstItemPrice.Count)
-                            //            {
-                            //                foundChanges = true;
-                            //            }
-                            //            else
-                            //            {
-                            //                if (items.FirstOrDefault().MstItemPrices.Count >= itemList.ListPOSIntegrationMstItemPrice.Count)
-                            //                {
-                            //                    foreach (var itemPrice in items.FirstOrDefault().MstItemPrices.ToList())
-                            //                    {
-                            //                        var itemListPrices = from d in itemList.ListPOSIntegrationMstItemPrice.ToList()
-                            //                                             where d.PriceDescription.Equals(itemPrice.PriceDescription)
-                            //                                             && d.Price == itemPrice.Price
-                            //                                             select d;
-
-                            //                        if (!itemListPrices.Any())
-                            //                        {
-                            //                            foundChanges = true;
-                            //                        }
-                            //                    }
-                            //                }
-                            //                else
-                            //                {
-                            //                    if (items.FirstOrDefault().MstItemPrices.Count <= itemList.ListPOSIntegrationMstItemPrice.Count)
-                            //                    {
-                            //                        foreach (var itemListPrice in itemList.ListPOSIntegrationMstItemPrice.ToList())
-                            //                        {
-                            //                            var itemPrices = from d in items.FirstOrDefault().MstItemPrices
-                            //                                             where d.PriceDescription.Equals(itemListPrice.PriceDescription)
-                            //                                             && d.Price == itemListPrice.Price
-                            //                                             select d;
-
-                            //                            if (!itemPrices.Any())
-                            //                            {
-                            //                                foundChanges = true;
-                            //                            }
-                            //                        }
-                            //                    }
-                            //                }
-
-                            //            }
-                            //        }
-                            //        else
-                            //        {
-                            //            foundChanges = true;
-                            //        }
-                            //    }
-                            //    else
-                            //    {
-                            //        if (items.FirstOrDefault().MstItemPrices.Any())
-                            //        {
-                            //            foundChanges = true;
-                            //        }
-                            //    }
-                            //}
-
                             if (foundChanges)
                             {
                                 File.WriteAllText(jsonFileName, json);
-                                Console.WriteLine("Updating existing item...");
-                                Console.WriteLine("Barcode: " + itemList.ManualArticleCode);
-                                Console.WriteLine("Item: " + itemList.Article);
+                                Console.WriteLine("Updating Item...");
 
                                 UpdateItem(database);
                             }
@@ -273,9 +209,7 @@ namespace POSIntegrator.Controllers
                                 if (taxes.Any())
                                 {
                                     File.WriteAllText(jsonFileName, json);
-                                    Console.WriteLine("Saving new item...");
-                                    Console.WriteLine("Barcode: " + itemList.ManualArticleCode);
-                                    Console.WriteLine("Item: " + itemList.Article);
+                                    Console.WriteLine("Saving Item...");
 
                                     UpdateItem(database);
                                 }
@@ -397,6 +331,8 @@ namespace POSIntegrator.Controllers
                                         posData.MstItems.InsertOnSubmit(newItem);
                                         posData.SubmitChanges();
 
+                                        Console.WriteLine("Barcode: " + item.ManualArticleCode);
+                                        Console.WriteLine("Item: " + item.Article);
                                         Console.WriteLine("Save Successful!");
                                         Console.WriteLine();
 
@@ -420,6 +356,8 @@ namespace POSIntegrator.Controllers
                                         updateItem.UpdateDateTime = DateTime.Now;
                                         posData.SubmitChanges();
 
+                                        Console.WriteLine("Barcode: " + item.ManualArticleCode);
+                                        Console.WriteLine("Item: " + item.Article);
                                         Console.WriteLine("Update Successful!");
                                         Console.WriteLine();
 
@@ -429,7 +367,9 @@ namespace POSIntegrator.Controllers
                             }
                             else
                             {
-                                Console.WriteLine("Save failed! Output tax mismatch.");
+                                Console.WriteLine("Barcode: " + item.ManualArticleCode);
+                                Console.WriteLine("Item: " + item.Article);
+                                Console.WriteLine("Save Failed! Output Tax Mismatch!");
                                 Console.WriteLine();
 
                                 File.Delete(file);
@@ -437,7 +377,9 @@ namespace POSIntegrator.Controllers
                         }
                         else
                         {
-                            Console.WriteLine("Save failed! Unit mismatch.");
+                            Console.WriteLine("Barcode: " + item.ManualArticleCode);
+                            Console.WriteLine("Item: " + item.Article);
+                            Console.WriteLine("Save Failed! Unit Mismatch!");
                             Console.WriteLine();
 
                             File.Delete(file);

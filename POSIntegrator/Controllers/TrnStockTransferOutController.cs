@@ -108,11 +108,12 @@ namespace POSIntegrator.Controllers
 
                         var stockOuts = from d in posData.TrnStockOuts
                                         where d.Remarks.Equals(fileName)
+                                        && d.TrnStockOutLines.Count() > 0
                                         select d;
 
                         if (!stockOuts.Any())
                         {
-                            Console.WriteLine("Saving Stock Transfer (OT) - " + fileName + "...");
+                            Console.WriteLine("Saving Stock Transfer (OT)...");
                             InsertStockTransferOT(database);
                         }
                         else
@@ -157,6 +158,7 @@ namespace POSIntegrator.Controllers
                     String fileName = "ST-" + st.BranchCode + "-" + st.STNumber;
                     var stockOut = from d in posData.TrnStockOuts
                                    where d.Remarks.Equals(fileName)
+                                   && d.TrnStockOutLines.Count() > 0
                                    select d;
 
                     if (!stockOut.Any())
@@ -242,8 +244,9 @@ namespace POSIntegrator.Controllers
                                         }
 
                                         posData.SubmitChanges();
-                                        Console.WriteLine("Stock Transfer (OT) - " + fileName + " was successfully saved!");
+                                        Console.WriteLine("Stock Transfer (OT): " + fileName);
                                         Console.WriteLine("Remarks: " + fileName);
+                                        Console.WriteLine("Save Successful!");
                                         Console.WriteLine();
 
                                         File.Delete(file);

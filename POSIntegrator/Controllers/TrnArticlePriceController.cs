@@ -104,10 +104,7 @@ namespace POSIntegrator.Controllers
                                     if (foundChanges)
                                     {
                                         File.WriteAllText(jsonFileName, json);
-                                        Console.WriteLine("Updating existing Item Price...");
-                                        Console.WriteLine("Barcode: " + itemPriceList.ItemCode);
-                                        Console.WriteLine("Item: " + itemPriceList.ItemDescription);
-                                        Console.WriteLine("Price Description: IP-" + itemPriceList.BranchCode + "-" + itemPriceList.IPNumber + " (" + itemPriceList.IPDate + ")");
+                                        Console.WriteLine("Updating Item Price...");
 
                                         UpdateItemPrice(database);
                                     }
@@ -115,10 +112,7 @@ namespace POSIntegrator.Controllers
                                 else
                                 {
                                     File.WriteAllText(jsonFileName, json);
-                                    Console.WriteLine("Saving new Item Price...");
-                                    Console.WriteLine("Barcode: " + itemPriceList.ItemCode);
-                                    Console.WriteLine("Item: " + itemPriceList.ItemDescription);
-                                    Console.WriteLine("Price Description: IP-" + itemPriceList.BranchCode + "-" + itemPriceList.IPNumber + " (" + itemPriceList.IPDate + ")");
+                                    Console.WriteLine("Saving Item Price...");
 
                                     UpdateItemPrice(database);
                                 }
@@ -126,10 +120,7 @@ namespace POSIntegrator.Controllers
                             else
                             {
                                 File.WriteAllText(jsonFileName, json);
-                                Console.WriteLine("Saving new Item Price...");
-                                Console.WriteLine("Barcode: " + itemPriceList.ItemCode);
-                                Console.WriteLine("Item: " + itemPriceList.ItemDescription);
-                                Console.WriteLine("Price Description: IP-" + itemPriceList.BranchCode + "-" + itemPriceList.IPNumber + " (" + itemPriceList.IPDate + ")");
+                                Console.WriteLine("Saving Item Price...");
 
                                 UpdateItemPrice(database);
                             }
@@ -199,6 +190,9 @@ namespace POSIntegrator.Controllers
                                 posData.MstItemPrices.InsertOnSubmit(newItemPrice);
                                 posData.SubmitChanges();
 
+                                Console.WriteLine("Barcode: " + itemPriceList.ItemCode);
+                                Console.WriteLine("Item: " + itemPriceList.ItemDescription);
+                                Console.WriteLine("Price Description: IP-" + itemPriceList.BranchCode + "-" + itemPriceList.IPNumber + " (" + itemPriceList.IPDate + ")");
                                 Console.WriteLine("Save Successful!");
                                 Console.WriteLine();
 
@@ -211,6 +205,9 @@ namespace POSIntegrator.Controllers
                                 updateItemPrice.TriggerQuantity = itemPriceList.TriggerQuantity;
                                 posData.SubmitChanges();
 
+                                Console.WriteLine("Barcode: " + itemPriceList.ItemCode);
+                                Console.WriteLine("Item: " + itemPriceList.ItemDescription);
+                                Console.WriteLine("Price Description: IP-" + itemPriceList.BranchCode + "-" + itemPriceList.IPNumber + " (" + itemPriceList.IPDate + ")");
                                 Console.WriteLine("Update Successful!");
                                 Console.WriteLine();
 
@@ -230,6 +227,9 @@ namespace POSIntegrator.Controllers
                             posData.MstItemPrices.InsertOnSubmit(newItemPrice);
                             posData.SubmitChanges();
 
+                            Console.WriteLine("Barcode: " + itemPriceList.ItemCode);
+                            Console.WriteLine("Item: " + itemPriceList.ItemDescription);
+                            Console.WriteLine("Price Description: IP-" + itemPriceList.BranchCode + "-" + itemPriceList.IPNumber + " (" + itemPriceList.IPDate + ")");
                             Console.WriteLine("Save Successful!");
                             Console.WriteLine();
 

@@ -27,7 +27,7 @@ namespace POSIntegrator
             }
 
             Console.WriteLine("===========================================");
-            Console.WriteLine("Innosoft POS Uploader - Version: 1.20180319");
+            Console.WriteLine("Innosoft POS Uploader - Version: 1.20180320");
             Console.WriteLine("===========================================");
 
             Console.WriteLine();
