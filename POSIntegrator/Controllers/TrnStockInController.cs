@@ -4,13 +4,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 
 namespace POSIntegrator.Controllers
 {
-    class TrnReceivingReceiptController
+    class TrnStockInController
     {
         // ============
         // Data Context
@@ -33,17 +31,17 @@ namespace POSIntegrator.Controllers
             return result;
         }
 
-        // =====================
-        // GET Receiving Receipt
-        // =====================
-        public void GetReceivingReceipt(String database, String apiUrlHost, String branchCode)
+        // =============
+        // GET Stock In
+        // =============
+        public void GetStockIn(String database, String apiUrlHost, String branchCode)
         {
             try
             {
                 DateTime dateTimeToday = DateTime.Now;
-                String receivingReceiptDate = dateTimeToday.ToString("MM-dd-yyyy", CultureInfo.InvariantCulture);
+                String stockInDate = dateTimeToday.ToString("MM-dd-yyyy", CultureInfo.InvariantCulture);
 
-                var httpWebRequest = (HttpWebRequest)WebRequest.Create("http://" + apiUrlHost + "/api/get/POSIntegration/receivingReceipt/" + receivingReceiptDate + "/" + branchCode);
+                var httpWebRequest = (HttpWebRequest)WebRequest.Create("http://" + apiUrlHost + "/api/get/POSIntegration/stockIn/" + stockInDate + "/" + branchCode);
                 httpWebRequest.Method = "GET";
                 httpWebRequest.Accept = "application/json";
 
@@ -52,61 +50,57 @@ namespace POSIntegrator.Controllers
                 {
                     var result = streamReader.ReadToEnd();
                     JavaScriptSerializer js = new JavaScriptSerializer();
-                    List<POSIntegrator.TrnReceivingReceipt> receivingReceiptLists = (List<POSIntegrator.TrnReceivingReceipt>)js.Deserialize(result, typeof(List<POSIntegrator.TrnReceivingReceipt>));
+                    List<POSIntegrator.TrnStockIn> stockInLists = (List<POSIntegrator.TrnStockIn>)js.Deserialize(result, typeof(List<POSIntegrator.TrnStockIn>));
 
-                    foreach (var receivingReceiptList in receivingReceiptLists)
+                    foreach (var stockInList in stockInLists)
                     {
-                        if (receivingReceiptList.ListPOSIntegrationTrnReceivingReceiptItem.Any())
+                        List<TrnStockInItem> listStockInItems = new List<TrnStockInItem>();
+                        foreach (var stockInListItem in stockInList.ListPOSIntegrationTrnStockInItem)
                         {
-                            List<TrnReceivingReceiptItem> listReceivingReceiptItem = new List<TrnReceivingReceiptItem>();
-                            foreach (var receivingReceiptListItem in receivingReceiptList.ListPOSIntegrationTrnReceivingReceiptItem)
+                            listStockInItems.Add(new TrnStockInItem()
                             {
-                                listReceivingReceiptItem.Add(new TrnReceivingReceiptItem()
-                                {
-                                    RRId = receivingReceiptListItem.RRId,
-                                    ItemCode = receivingReceiptListItem.ItemCode,
-                                    Item = receivingReceiptListItem.Item,
-                                    BranchCode = receivingReceiptListItem.BranchCode,
-                                    Unit = receivingReceiptListItem.Unit,
-                                    Quantity = receivingReceiptListItem.Quantity,
-                                    Cost = receivingReceiptListItem.Cost,
-                                    Amount = receivingReceiptListItem.Amount
-                                });
-                            }
+                                INId = stockInListItem.INId,
+                                ItemCode = stockInListItem.ItemCode,
+                                Item = stockInListItem.Item,
+                                Unit = stockInListItem.Unit,
+                                Quantity = stockInListItem.Quantity,
+                                Cost = stockInListItem.Cost,
+                                Amount = stockInListItem.Amount
+                            });
+                        }
 
-                            var stockTransferData = new POSIntegrator.TrnReceivingReceipt()
-                            {
-                                BranchCode = receivingReceiptList.BranchCode,
-                                Branch = receivingReceiptList.Branch,
-                                RRNumber = receivingReceiptList.RRNumber,
-                                RRDate = receivingReceiptList.RRDate,
-                                ListPOSIntegrationTrnReceivingReceiptItem = receivingReceiptList.ListPOSIntegrationTrnReceivingReceiptItem.ToList()
-                            };
+                        var stockInData = new POSIntegrator.TrnStockIn()
+                        {
+                            BranchCode = stockInList.BranchCode,
+                            Branch = stockInList.Branch,
+                            INNumber = stockInList.INNumber,
+                            INDate = stockInList.INDate,
+                            ListPOSIntegrationTrnStockInItem = stockInList.ListPOSIntegrationTrnStockInItem.ToList()
+                        };
 
-                            String jsonPath = "d:/innosoft/json/RR";
-                            String fileName = "RR-" + receivingReceiptList.BranchCode + "-" + receivingReceiptList.RRNumber;
+                        String jsonPath = "d:/innosoft/json/IN";
+                        String fileName = "IN-" + stockInList.BranchCode + "-" + stockInList.INNumber;
 
-                            String json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(stockTransferData);
-                            String jsonFileName = jsonPath + "\\" + fileName + ".json";
-                            File.WriteAllText(jsonFileName, json);
+                        String json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(stockInData);
+                        String jsonFileName = jsonPath + "\\" + fileName + ".json";
+                        File.WriteAllText(jsonFileName, json);
 
-                            var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
-                            posData = new Data.POSDatabaseDataContext(newConnectionString);
+                        var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
+                        posData = new Data.POSDatabaseDataContext(newConnectionString);
 
-                            var stockIn = from d in posData.TrnStockIns
-                                          where d.Remarks.Equals(fileName)
-                                          && d.TrnStockInLines.Count() > 0
-                                          select d;
+                        var stockIn = from d in posData.TrnStockIns
+                                      where d.Remarks.Equals(fileName)
+                                      && d.TrnStockInLines.Count() > 0
+                                      select d;
 
-                            if (!stockIn.Any())
-                            {
-                                Console.WriteLine("Saving Receiving Receipt...");
-                                InsertReceivingReceipt(database);
-                            }
-                            else
-                            {
-                                File.Delete(jsonFileName);
-                            }
+                        if (!stockIn.Any())
+                        {
+                            Console.WriteLine("Saving Stock In...");
+                            InsertStockIn(database);
+                        }
+                        else
+                        {
+                            File.Delete(jsonFileName);
                         }
                     }
                 }
@@ -117,14 +111,14 @@ namespace POSIntegrator.Controllers
             }
         }
 
-        // ========================
-        // INSERT Receiving Receipt
-        // ========================
-        public void InsertReceivingReceipt(String database)
+        // ================
+        // INSERT Stock In
+        // ================
+        public void InsertStockIn(String database)
         {
             try
             {
-                String jsonPath = "d:/innosoft/json/RR";
+                String jsonPath = "d:/innosoft/json/IN";
                 List<String> files = new List<String>(Directory.EnumerateFiles(jsonPath));
                 foreach (var file in files)
                 {
@@ -138,12 +132,12 @@ namespace POSIntegrator.Controllers
                     }
 
                     var json_serializer = new JavaScriptSerializer();
-                    POSIntegrator.TrnReceivingReceipt rr = json_serializer.Deserialize<POSIntegrator.TrnReceivingReceipt>(json);
+                    POSIntegrator.TrnStockIn stockInJson = json_serializer.Deserialize<POSIntegrator.TrnStockIn>(json);
 
                     var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
                     posData = new Data.POSDatabaseDataContext(newConnectionString);
 
-                    String fileName = "RR-" + rr.BranchCode + "-" + rr.RRNumber;
+                    String fileName = "IN-" + stockInJson.BranchCode + "-" + stockInJson.INNumber;
                     var stockIn = from d in posData.TrnStockIns
                                   where d.Remarks.Equals(fileName)
                                   && d.TrnStockInLines.Count() > 0
@@ -169,7 +163,7 @@ namespace POSIntegrator.Controllers
                         Data.TrnStockIn newStockIn = new Data.TrnStockIn
                         {
                             PeriodId = defaultPeriod.FirstOrDefault().Id,
-                            StockInDate = Convert.ToDateTime(rr.RRDate),
+                            StockInDate = Convert.ToDateTime(stockInJson.INDate),
                             StockInNumber = stockInNumberResult,
                             SupplierId = defaultSettings.FirstOrDefault().PostSupplierId,
                             Remarks = fileName,
@@ -190,7 +184,7 @@ namespace POSIntegrator.Controllers
                         posData.TrnStockIns.InsertOnSubmit(newStockIn);
                         posData.SubmitChanges();
 
-                        foreach (var item in rr.ListPOSIntegrationTrnReceivingReceiptItem.ToList())
+                        foreach (var item in stockInJson.ListPOSIntegrationTrnStockInItem.ToList())
                         {
                             var items = from d in posData.MstItems
                                         where d.BarCode.Equals(item.ItemCode)
@@ -235,7 +229,7 @@ namespace POSIntegrator.Controllers
 
                                     posData.SubmitChanges();
 
-                                    Console.WriteLine("Receiving Receipt: " + fileName);
+                                    Console.WriteLine("Stock In: " + fileName);
                                     Console.WriteLine("Remarks: " + fileName);
                                     Console.WriteLine("Save Successful!");
                                     Console.WriteLine();

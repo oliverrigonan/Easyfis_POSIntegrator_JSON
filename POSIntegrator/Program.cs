@@ -75,6 +75,7 @@ namespace POSIntegrator
             Controllers.TrnCollectionController objCollection = new Controllers.TrnCollectionController();
             Controllers.TrnStockTransferInController objStockTransferIn = new Controllers.TrnStockTransferInController();
             Controllers.TrnStockTransferOutController objStockTransferOut = new Controllers.TrnStockTransferOutController();
+            Controllers.TrnStockInController objStockIn = new Controllers.TrnStockInController();
             Controllers.TrnStockOutController objStockOut = new Controllers.TrnStockOutController();
             Controllers.TrnReceivingReceiptController objReceivingReceipt = new Controllers.TrnReceivingReceiptController();
             Controllers.TrnArticlePriceController objArticlePrice = new Controllers.TrnArticlePriceController();
@@ -95,6 +96,7 @@ namespace POSIntegrator
                         objCollection.GetCollection(database, apiUrlHost, branchCode, userCode);
                         objStockTransferIn.GetStockTransferIN(database, apiUrlHost, branchCode);
                         objStockTransferOut.GetStockTransferOT(database, apiUrlHost, branchCode);
+                        objStockIn.GetStockIn(database, apiUrlHost, branchCode);
                         objStockOut.GetStockOut(database, apiUrlHost, branchCode);
                         objReceivingReceipt.GetReceivingReceipt(database, apiUrlHost, branchCode);
                         objArticlePrice.GetItemPrice(database, apiUrlHost, branchCode);

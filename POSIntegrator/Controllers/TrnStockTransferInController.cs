@@ -230,6 +230,7 @@ namespace POSIntegrator.Controllers
                                     }
 
                                     posData.SubmitChanges();
+
                                     Console.WriteLine("Stock Transfer (IN): " + fileName);
                                     Console.WriteLine("Remarks: " + fileName);
                                     Console.WriteLine("Save Successful!");

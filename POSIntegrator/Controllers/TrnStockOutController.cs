@@ -226,6 +226,7 @@ namespace POSIntegrator.Controllers
                                         }
 
                                         posData.SubmitChanges();
+
                                         Console.WriteLine("Stock Out: " + fileName);
                                         Console.WriteLine("Remarks: " + fileName);
                                         Console.WriteLine("Save Successful!");
