@@ -56,30 +56,17 @@ namespace POSIntegrator.Controllers
 
                     foreach (var itemList in itemLists)
                     {
-                        List<MstItemPrice> ListItemPrices = new List<MstItemPrice>();
-                        foreach (var listItemPrice in itemList.ListPOSIntegrationMstItemPrice.ToList())
-                        {
-                            ListItemPrices.Add(new MstItemPrice()
-                            {
-                                ArticleId = listItemPrice.ArticleId,
-                                PriceDescription = listItemPrice.PriceDescription,
-                                Price = listItemPrice.Price
-                            });
-                        }
-
                         var itemData = new POSIntegrator.MstItem()
                         {
                             ManualArticleCode = itemList.ManualArticleCode,
                             Article = itemList.Article,
-                            ArticleTypeId = itemList.ArticleTypeId,
                             Category = itemList.Category,
                             Unit = itemList.Unit,
                             Price = itemList.Price,
                             Cost = itemList.Cost,
                             IsInventory = itemList.IsInventory,
                             Particulars = itemList.Particulars,
-                            OutputTax = itemList.OutputTax,
-                            ListPOSIntegrationMstItemPrice = itemList.ListPOSIntegrationMstItemPrice.ToList()
+                            OutputTax = itemList.OutputTax
                         };
 
                         String jsonPath = "d:/innosoft/json/master";

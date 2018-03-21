@@ -43,8 +43,6 @@ namespace POSIntegrator.Controllers
                             BranchCode = itemPriceList.BranchCode,
                             IPNumber = itemPriceList.IPNumber,
                             IPDate = itemPriceList.IPDate,
-                            Particulars = itemPriceList.Particulars,
-                            ManualIPNumber = itemPriceList.ManualIPNumber,
                             ItemCode = itemPriceList.ItemCode,
                             ItemDescription = itemPriceList.ItemDescription,
                             Price = itemPriceList.Price,

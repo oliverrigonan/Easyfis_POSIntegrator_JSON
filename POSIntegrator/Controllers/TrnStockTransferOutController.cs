@@ -62,15 +62,10 @@ namespace POSIntegrator.Controllers
                                 STId = stockTransferListItem.STId,
                                 ItemCode = stockTransferListItem.ItemCode,
                                 Item = stockTransferListItem.Item,
-                                InventoryCode = stockTransferListItem.InventoryCode,
-                                Particulars = stockTransferListItem.Particulars,
                                 Unit = stockTransferListItem.Unit,
                                 Quantity = stockTransferListItem.Quantity,
                                 Cost = stockTransferListItem.Cost,
-                                Amount = stockTransferListItem.Amount,
-                                BaseUnit = stockTransferListItem.BaseUnit,
-                                BaseQuantity = stockTransferListItem.BaseQuantity,
-                                BaseCost = stockTransferListItem.BaseCost
+                                Amount = stockTransferListItem.Amount
                             });
                         }
 
@@ -82,17 +77,6 @@ namespace POSIntegrator.Controllers
                             STDate = stockTransferList.STDate,
                             ToBranch = stockTransferList.ToBranch,
                             ToBranchCode = stockTransferList.ToBranchCode,
-                            Article = stockTransferList.Article,
-                            Particulars = stockTransferList.Particulars,
-                            ManualSTNumber = stockTransferList.ManualSTNumber,
-                            PreparedBy = stockTransferList.PreparedBy,
-                            CheckedBy = stockTransferList.CheckedBy,
-                            ApprovedBy = stockTransferList.ApprovedBy,
-                            IsLocked = stockTransferList.IsLocked,
-                            CreatedBy = stockTransferList.CreatedBy,
-                            CreatedDateTime = stockTransferList.CreatedDateTime,
-                            UpdatedBy = stockTransferList.UpdatedBy,
-                            UpdatedDateTime = stockTransferList.UpdatedDateTime,
                             ListPOSIntegrationTrnStockTransferItem = stockTransferList.ListPOSIntegrationTrnStockTransferItem.ToList()
                         };
 

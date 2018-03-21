@@ -65,10 +65,7 @@ namespace POSIntegrator.Controllers
                                 Unit = stockOutListItem.Unit,
                                 Quantity = stockOutListItem.Quantity,
                                 Cost = stockOutListItem.Cost,
-                                Amount = stockOutListItem.Amount,
-                                BaseUnit = stockOutListItem.BaseUnit,
-                                BaseQuantity = stockOutListItem.BaseQuantity,
-                                BaseCost = stockOutListItem.BaseCost
+                                Amount = stockOutListItem.Amount
                             });
                         }
 
@@ -78,16 +75,6 @@ namespace POSIntegrator.Controllers
                             Branch = stockOutList.Branch,
                             OTNumber = stockOutList.OTNumber,
                             OTDate = stockOutList.OTDate,
-                            Particulars = stockOutList.Particulars,
-                            ManualOTNumber = stockOutList.ManualOTNumber,
-                            PreparedBy = stockOutList.PreparedBy,
-                            CheckedBy = stockOutList.CheckedBy,
-                            ApprovedBy = stockOutList.ApprovedBy,
-                            IsLocked = stockOutList.IsLocked,
-                            CreatedBy = stockOutList.CreatedBy,
-                            CreatedDateTime = stockOutList.CreatedDateTime,
-                            UpdatedBy = stockOutList.UpdatedBy,
-                            UpdatedDateTime = stockOutList.UpdatedDateTime,
                             ListPOSIntegrationTrnStockOutItem = stockOutList.ListPOSIntegrationTrnStockOutItem.ToList()
                         };
 

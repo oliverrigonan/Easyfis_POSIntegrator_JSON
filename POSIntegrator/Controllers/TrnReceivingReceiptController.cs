@@ -66,16 +66,11 @@ namespace POSIntegrator.Controllers
                                     RRId = receivingReceiptListItem.RRId,
                                     ItemCode = receivingReceiptListItem.ItemCode,
                                     Item = receivingReceiptListItem.Item,
-                                    Particulars = receivingReceiptListItem.Particulars,
                                     BranchCode = receivingReceiptListItem.BranchCode,
-                                    Branch = receivingReceiptListItem.Branch,
                                     Unit = receivingReceiptListItem.Unit,
                                     Quantity = receivingReceiptListItem.Quantity,
                                     Cost = receivingReceiptListItem.Cost,
-                                    Amount = receivingReceiptListItem.Amount,
-                                    BaseUnit = receivingReceiptListItem.BaseUnit,
-                                    BaseQuantity = receivingReceiptListItem.BaseQuantity,
-                                    BaseCost = receivingReceiptListItem.BaseCost
+                                    Amount = receivingReceiptListItem.Amount
                                 });
                             }
 
@@ -85,20 +80,6 @@ namespace POSIntegrator.Controllers
                                 Branch = receivingReceiptList.Branch,
                                 RRNumber = receivingReceiptList.RRNumber,
                                 RRDate = receivingReceiptList.RRDate,
-                                Supplier = receivingReceiptList.Supplier,
-                                Term = receivingReceiptList.Term,
-                                DocumentReference = receivingReceiptList.DocumentReference,
-                                ManualRRNumber = receivingReceiptList.ManualRRNumber,
-                                Remarks = receivingReceiptList.Remarks,
-                                PreparedBy = receivingReceiptList.PreparedBy,
-                                ReceivedBy = receivingReceiptList.PreparedBy,
-                                CheckedBy = receivingReceiptList.CheckedBy,
-                                ApprovedBy = receivingReceiptList.ApprovedBy,
-                                IsLocked = receivingReceiptList.IsLocked,
-                                CreatedBy = receivingReceiptList.CreatedBy,
-                                CreatedDateTime = receivingReceiptList.CreatedDateTime,
-                                UpdatedBy = receivingReceiptList.UpdatedBy,
-                                UpdatedDateTime = receivingReceiptList.UpdatedDateTime,
                                 ListPOSIntegrationTrnReceivingReceiptItem = receivingReceiptList.ListPOSIntegrationTrnReceivingReceiptItem.ToList()
                             };
 

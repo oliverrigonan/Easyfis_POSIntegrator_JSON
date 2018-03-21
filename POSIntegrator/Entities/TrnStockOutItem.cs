@@ -11,8 +11,5 @@ namespace POSIntegrator
         public Decimal Quantity { get; set; }
         public Decimal Cost { get; set; }
         public Decimal Amount { get; set; }
-        public String BaseUnit { get; set; }
-        public Decimal BaseQuantity { get; set; }
-        public Decimal BaseCost { get; set; }
     }
 }
