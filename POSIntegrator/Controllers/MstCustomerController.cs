@@ -47,6 +47,7 @@ namespace POSIntegrator.Controllers
                             ContactNumber = customerList.ContactNumber,
                             Term = customerList.Term,
                             TaxNumber = customerList.TaxNumber,
+                            CreditLimit = customerList.CreditLimit
                         };
 
                         String jsonPath = "d:/innosoft/json/master";
@@ -65,6 +66,7 @@ namespace POSIntegrator.Controllers
 
                         var customers = from d in posData.MstCustomers
                                         where d.CustomerCode.Equals(customerList.ManualArticleCode)
+                                        && d.CustomerCode != null
                                         select d;
 
                         if (customers.Any())
@@ -121,12 +123,9 @@ namespace POSIntegrator.Controllers
 
                             if (!foundChanges)
                             {
-                                if (customers.FirstOrDefault().CustomerCode != null)
+                                if (!customers.FirstOrDefault().CreditLimit.Equals(customerList.CreditLimit))
                                 {
-                                    if (!customers.FirstOrDefault().TIN.Equals(customerList.TaxNumber))
-                                    {
-                                        foundChanges = true;
-                                    }
+                                    foundChanges = true;
                                 }
                             }
 
@@ -215,7 +214,7 @@ namespace POSIntegrator.Controllers
                                     Address = customer.Address,
                                     ContactPerson = customer.ContactPerson,
                                     ContactNumber = customer.ContactNumber,
-                                    CreditLimit = 0,
+                                    CreditLimit = customer.CreditLimit,
                                     TermId = terms.FirstOrDefault().Id,
                                     TIN = customer.TaxNumber,
                                     WithReward = false,
@@ -249,7 +248,7 @@ namespace POSIntegrator.Controllers
                                 updateCustomer.Address = customer.Address;
                                 updateCustomer.ContactPerson = customer.ContactPerson;
                                 updateCustomer.ContactNumber = customer.ContactNumber;
-                                updateCustomer.CreditLimit = 0;
+                                updateCustomer.CreditLimit = customer.CreditLimit;
                                 updateCustomer.TermId = terms.FirstOrDefault().Id;
                                 updateCustomer.UpdateUserId = defaultSettings.FirstOrDefault().PostUserId;
                                 updateCustomer.UpdateDateTime = DateTime.Now;

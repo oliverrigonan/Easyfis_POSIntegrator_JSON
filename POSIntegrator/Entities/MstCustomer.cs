@@ -15,5 +15,6 @@ namespace POSIntegrator
         public String ContactNumber { get; set; }
         public String Term { get; set; }
         public String TaxNumber { get; set; }
+        public Decimal CreditLimit { get; set; }
     }
 }
