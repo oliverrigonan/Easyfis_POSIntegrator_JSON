@@ -123,7 +123,7 @@ namespace POSIntegrator.Controllers
 
                             if (!foundChanges)
                             {
-                                if (!customers.FirstOrDefault().CreditLimit.Equals(customerList.CreditLimit))
+                                if (Convert.ToDecimal(customers.FirstOrDefault().CreditLimit) != Convert.ToDecimal(customerList.CreditLimit))
                                 {
                                     foundChanges = true;
                                 }
@@ -202,6 +202,7 @@ namespace POSIntegrator.Controllers
                         {
                             var customers = from d in posData.MstCustomers
                                             where d.CustomerCode.Equals(customer.ManualArticleCode)
+                                            && d.CustomerCode != null
                                             select d;
 
                             if (!customers.Any())
@@ -250,6 +251,7 @@ namespace POSIntegrator.Controllers
                                 updateCustomer.ContactNumber = customer.ContactNumber;
                                 updateCustomer.CreditLimit = customer.CreditLimit;
                                 updateCustomer.TermId = terms.FirstOrDefault().Id;
+                                updateCustomer.TIN = customer.TaxNumber;
                                 updateCustomer.UpdateUserId = defaultSettings.FirstOrDefault().PostUserId;
                                 updateCustomer.UpdateDateTime = DateTime.Now;
                                 updateCustomer.CustomerCode = customer.ManualArticleCode;
