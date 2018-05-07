@@ -123,13 +123,13 @@ namespace POSIntegrator.Controllers
                                 }
                             }
 
-                            if (!foundChanges)
-                            {
-                                if (items.FirstOrDefault().Price != itemList.Price)
-                                {
-                                    foundChanges = true;
-                                }
-                            }
+                            //if (!foundChanges)
+                            //{
+                            //    if (items.FirstOrDefault().Price != itemList.Price)
+                            //    {
+                            //        foundChanges = true; (changing of price shoud be in easyfis item price module)
+                            //    }
+                            //}
 
                             if (!foundChanges)
                             {
@@ -334,7 +334,7 @@ namespace POSIntegrator.Controllers
                                         updateItem.ItemDescription = item.Article;
                                         updateItem.Category = item.Category;
                                         updateItem.UnitId = units.FirstOrDefault().Id;
-                                        updateItem.Price = item.Price;
+                                        //updateItem.Price = item.Price; (changing of price shoud be in easyfis item price module)
                                         updateItem.Cost = item.Cost;
                                         updateItem.IsInventory = item.IsInventory;
                                         updateItem.Remarks = item.Particulars;

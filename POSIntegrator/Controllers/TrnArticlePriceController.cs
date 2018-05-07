@@ -188,6 +188,9 @@ namespace POSIntegrator.Controllers
                                 posData.MstItemPrices.InsertOnSubmit(newItemPrice);
                                 posData.SubmitChanges();
 
+                                item.FirstOrDefault().Price = itemPriceList.Price;
+                                posData.SubmitChanges();
+
                                 Console.WriteLine("Barcode: " + itemPriceList.ItemCode);
                                 Console.WriteLine("Item: " + itemPriceList.ItemDescription);
                                 Console.WriteLine("Price Description: IP-" + itemPriceList.BranchCode + "-" + itemPriceList.IPNumber + " (" + itemPriceList.IPDate + ")");
@@ -201,6 +204,9 @@ namespace POSIntegrator.Controllers
                                 var updateItemPrice = itemPrices.FirstOrDefault();
                                 updateItemPrice.Price = itemPriceList.Price;
                                 updateItemPrice.TriggerQuantity = itemPriceList.TriggerQuantity;
+                                posData.SubmitChanges();
+
+                                item.FirstOrDefault().Price = itemPriceList.Price;
                                 posData.SubmitChanges();
 
                                 Console.WriteLine("Barcode: " + itemPriceList.ItemCode);
@@ -223,6 +229,9 @@ namespace POSIntegrator.Controllers
                             };
 
                             posData.MstItemPrices.InsertOnSubmit(newItemPrice);
+                            posData.SubmitChanges();
+
+                            item.FirstOrDefault().Price = itemPriceList.Price;
                             posData.SubmitChanges();
 
                             Console.WriteLine("Barcode: " + itemPriceList.ItemCode);
