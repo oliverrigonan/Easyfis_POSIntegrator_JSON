@@ -18,7 +18,7 @@ namespace POSIntegrator
         public static void Main(String[] args)
         {
             Int32 i = 0;
-            String apiUrlHost = "", database = "";
+            String apiUrlHost = "localhost:2651", database = "pos";
             foreach (var arg in args)
             {
                 if (i == 0) { apiUrlHost = arg; }

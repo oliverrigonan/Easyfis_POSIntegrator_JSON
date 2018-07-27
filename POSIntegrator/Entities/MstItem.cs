@@ -17,5 +17,6 @@ namespace POSIntegrator
         public Boolean IsInventory { get; set; }
         public String Particulars { get; set; }
         public String OutputTax { get; set; }
+        public List<MstItemPrice> ListItemPrice { get; set; }
     }
 }

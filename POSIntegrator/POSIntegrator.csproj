@@ -99,6 +99,7 @@
     </Compile>
     <Compile Include="Entities\MstCustomer.cs" />
     <Compile Include="Entities\MstItem.cs" />
+    <Compile Include="Entities\MstItemPrice.cs" />
     <Compile Include="Entities\MstSupplier.cs" />
     <Compile Include="Entities\TrnArticlePrice.cs" />
     <Compile Include="Entities\TrnCollection.cs" />

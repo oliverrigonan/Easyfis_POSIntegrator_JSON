@@ -56,6 +56,18 @@ namespace POSIntegrator.Controllers
 
                     foreach (var itemList in itemLists)
                     {
+                        List<MstItemPrice> listItemPrice = new List<MstItemPrice>();
+                        foreach (var itemPriceList in itemList.ListItemPrice)
+                        {
+                            listItemPrice.Add(new MstItemPrice()
+                            {
+                                ArticleId = itemPriceList.ArticleId,
+                                PriceDescription = itemPriceList.PriceDescription,
+                                Price = itemPriceList.Price,
+                                Remarks = itemPriceList.Remarks,
+                            });
+                        }
+
                         var itemData = new POSIntegrator.MstItem()
                         {
                             ManualArticleCode = itemList.ManualArticleCode,
@@ -66,7 +78,8 @@ namespace POSIntegrator.Controllers
                             Cost = itemList.Cost,
                             IsInventory = itemList.IsInventory,
                             Particulars = itemList.Particulars,
-                            OutputTax = itemList.OutputTax
+                            OutputTax = itemList.OutputTax,
+                            ListItemPrice = itemList.ListItemPrice.ToList()
                         };
 
                         String jsonPath = "d:/innosoft/json/master";
@@ -123,13 +136,13 @@ namespace POSIntegrator.Controllers
                                 }
                             }
 
-                            //if (!foundChanges)
-                            //{
-                            //    if (items.FirstOrDefault().Price != itemList.Price)
-                            //    {
-                            //        foundChanges = true; (changing of price shoud be in easyfis item price module)
-                            //    }
-                            //}
+                            if (!foundChanges)
+                            {
+                                if (items.FirstOrDefault().Price != itemList.Price)
+                                {
+                                    foundChanges = true;
+                                }
+                            }
 
                             if (!foundChanges)
                             {
@@ -169,6 +182,29 @@ namespace POSIntegrator.Controllers
                                     if (items.FirstOrDefault().OutTaxId != taxes.FirstOrDefault().Id)
                                     {
                                         foundChanges = true;
+                                    }
+                                }
+                            }
+
+                            if (!foundChanges)
+                            {
+                                if (itemList.ListItemPrice.Any())
+                                {
+                                    foreach (var itemPrice in itemList.ListItemPrice.ToList())
+                                    {
+                                        if (!foundChanges)
+                                        {
+                                            var posItemPrices = from d in posData.MstItemPrices
+                                                                where d.MstItem.BarCode.Equals(itemList.ManualArticleCode)
+                                                                && d.PriceDescription.Equals(itemPrice.PriceDescription)
+                                                                && d.Price == itemPrice.Price
+                                                                select d;
+
+                                            if (!posItemPrices.Any())
+                                            {
+                                                foundChanges = true;
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -318,6 +354,24 @@ namespace POSIntegrator.Controllers
                                         posData.MstItems.InsertOnSubmit(newItem);
                                         posData.SubmitChanges();
 
+                                        if (item.ListItemPrice.Any())
+                                        {
+                                            foreach (var itemPrice in item.ListItemPrice.ToList())
+                                            {
+                                                Data.MstItemPrice newItemPrice = new Data.MstItemPrice
+                                                {
+                                                    ItemId = newItem.Id,
+                                                    PriceDescription = itemPrice.PriceDescription,
+                                                    Price = itemPrice.Price,
+                                                    TriggerQuantity = 0
+                                                };
+
+                                                posData.MstItemPrices.InsertOnSubmit(newItemPrice);
+                                            }
+
+                                            posData.SubmitChanges();
+                                        }
+
                                         Console.WriteLine("Barcode: " + item.ManualArticleCode);
                                         Console.WriteLine("Item: " + item.Article);
                                         Console.WriteLine("Save Successful!");
@@ -334,7 +388,7 @@ namespace POSIntegrator.Controllers
                                         updateItem.ItemDescription = item.Article;
                                         updateItem.Category = item.Category;
                                         updateItem.UnitId = units.FirstOrDefault().Id;
-                                        //updateItem.Price = item.Price; (changing of price shoud be in easyfis item price module)
+                                        updateItem.Price = item.Price;
                                         updateItem.Cost = item.Cost;
                                         updateItem.IsInventory = item.IsInventory;
                                         updateItem.Remarks = item.Particulars;
@@ -342,6 +396,40 @@ namespace POSIntegrator.Controllers
                                         updateItem.UpdateUserId = defaultSettings.FirstOrDefault().PostUserId;
                                         updateItem.UpdateDateTime = DateTime.Now;
                                         posData.SubmitChanges();
+
+                                        if (item.ListItemPrice.Any())
+                                        {
+                                            var posItemPrices = from d in posData.MstItemPrices
+                                                                where d.ItemId == items.FirstOrDefault().Id
+                                                                select d;
+
+                                            bool isEmpty = false;
+                                            if (posItemPrices.Any())
+                                            {
+                                                posData.MstItemPrices.DeleteAllOnSubmit(posItemPrices);
+                                                posData.SubmitChanges();
+
+                                                isEmpty = true;
+                                            }
+
+                                            if (isEmpty)
+                                            {
+                                                foreach (var itemPrice in item.ListItemPrice.ToList())
+                                                {
+                                                    Data.MstItemPrice newItemPrice = new Data.MstItemPrice
+                                                    {
+                                                        ItemId = items.FirstOrDefault().Id,
+                                                        PriceDescription = itemPrice.PriceDescription,
+                                                        Price = itemPrice.Price,
+                                                        TriggerQuantity = 0
+                                                    };
+
+                                                    posData.MstItemPrices.InsertOnSubmit(newItemPrice);
+                                                }
+
+                                                posData.SubmitChanges();
+                                            }
+                                        }
 
                                         Console.WriteLine("Barcode: " + item.ManualArticleCode);
                                         Console.WriteLine("Item: " + item.Article);
