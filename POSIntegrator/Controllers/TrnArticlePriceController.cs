@@ -72,16 +72,18 @@ namespace POSIntegrator.Controllers
                             var itemPrices = from d in posData.MstItemPrices
                                              where d.ItemId == item.FirstOrDefault().Id
                                              && d.PriceDescription.Equals("IP-" + itemPriceList.BranchCode + "-" + itemPriceList.IPNumber + " (" + itemPriceList.IPDate + ")")
-                                             && d.Price != itemPriceList.Price
-                                             && d.TriggerQuantity != itemPriceList.TriggerQuantity
+                                             && d.Price == itemPriceList.Price
                                              select d;
 
                             if (itemPrices.Any())
                             {
-                                File.WriteAllText(jsonFileName, json);
-                                Console.WriteLine("Updating Item Price...");
+                                if (itemPrices.FirstOrDefault().TriggerQuantity != itemPriceList.TriggerQuantity)
+                                {
+                                    File.WriteAllText(jsonFileName, json);
+                                    Console.WriteLine("Updating Item Price...");
 
-                                UpdateItemPrice(database);
+                                    UpdateItemPrice(database);
+                                }
                             }
                         }
                     }
@@ -126,34 +128,32 @@ namespace POSIntegrator.Controllers
 
                     if (item.Any())
                     {
-                        var updateItem = item.FirstOrDefault();
-                        updateItem.Price = itemPriceList.Price;
+                        var updateItemBasePrice = item.FirstOrDefault();
+                        updateItemBasePrice.Price = itemPriceList.Price;
                         posData.SubmitChanges();
 
                         var itemPrices = from d in posData.MstItemPrices
                                          where d.ItemId == item.FirstOrDefault().Id
                                          && d.PriceDescription.Equals("IP-" + itemPriceList.BranchCode + "-" + itemPriceList.IPNumber + " (" + itemPriceList.IPDate + ")")
-                                         && d.Price != itemPriceList.Price
-                                         && d.TriggerQuantity != itemPriceList.TriggerQuantity
+                                         && d.Price == itemPriceList.Price
                                          select d;
 
                         if (itemPrices.Any())
                         {
-                            var updateItemPrice = itemPrices.FirstOrDefault();
-                            updateItemPrice.Price = itemPriceList.Price;
-                            updateItemPrice.TriggerQuantity = itemPriceList.TriggerQuantity;
-                            posData.SubmitChanges();
+                            if (itemPrices.FirstOrDefault().TriggerQuantity != itemPriceList.TriggerQuantity)
+                            {
+                                var updateItemPrice = itemPrices.FirstOrDefault();
+                                updateItemPrice.TriggerQuantity = itemPriceList.TriggerQuantity;
+                                posData.SubmitChanges();
 
-                            item.FirstOrDefault().Price = itemPriceList.Price;
-                            posData.SubmitChanges();
+                                Console.WriteLine("Barcode: " + itemPriceList.ItemCode);
+                                Console.WriteLine("Item: " + itemPriceList.ItemDescription);
+                                Console.WriteLine("Price Description: IP-" + itemPriceList.BranchCode + "-" + itemPriceList.IPNumber + " (" + itemPriceList.IPDate + ")");
+                                Console.WriteLine("Update Successful!");
+                                Console.WriteLine();
 
-                            Console.WriteLine("Barcode: " + itemPriceList.ItemCode);
-                            Console.WriteLine("Item: " + itemPriceList.ItemDescription);
-                            Console.WriteLine("Price Description: IP-" + itemPriceList.BranchCode + "-" + itemPriceList.IPNumber + " (" + itemPriceList.IPDate + ")");
-                            Console.WriteLine("Update Successful!");
-                            Console.WriteLine();
-
-                            File.Delete(file);
+                                File.Delete(file);
+                            }
                         }
                     }
                 }

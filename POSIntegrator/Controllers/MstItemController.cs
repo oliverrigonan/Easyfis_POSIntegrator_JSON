@@ -190,19 +190,32 @@ namespace POSIntegrator.Controllers
                             {
                                 if (itemList.ListItemPrice.Any())
                                 {
-                                    foreach (var itemPrice in itemList.ListItemPrice.ToList())
-                                    {
-                                        if (!foundChanges)
-                                        {
-                                            var posItemPrices = from d in posData.MstItemPrices
-                                                                where d.MstItem.BarCode.Equals(itemList.ManualArticleCode)
-                                                                && d.PriceDescription.Equals(itemPrice.PriceDescription)
-                                                                && d.Price == itemPrice.Price
-                                                                select d;
+                                    var posItemPrices = from d in posData.MstItemPrices
+                                                        where d.MstItem.BarCode.Equals(itemList.ManualArticleCode)
+                                                        select d;
 
-                                            if (!posItemPrices.Any())
+                                    if (posItemPrices.Any())
+                                    {
+                                        int posItemPriceCount = posItemPrices.Count();
+                                        int itemPriceListCount = itemList.ListItemPrice.Count();
+
+                                        if (posItemPriceCount != itemPriceListCount)
+                                        {
+                                            foundChanges = true;
+                                        }
+                                        else
+                                        {
+                                            foreach (var itemPrice in itemList.ListItemPrice.ToList())
                                             {
-                                                foundChanges = true;
+                                                var currentPOSItemPrices = from d in posItemPrices
+                                                                           where d.PriceDescription.Equals(itemPrice.PriceDescription)
+                                                                           && d.Price == itemPrice.Price
+                                                                           select d;
+
+                                                if (!currentPOSItemPrices.Any())
+                                                {
+                                                    foundChanges = true;
+                                                }
                                             }
                                         }
                                     }

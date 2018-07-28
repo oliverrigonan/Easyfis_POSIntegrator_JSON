@@ -18,7 +18,7 @@ namespace POSIntegrator
         public static void Main(String[] args)
         {
             Int32 i = 0;
-            String apiUrlHost = "localhost:2651", database = "pos";
+            String apiUrlHost = "", database = "";
             foreach (var arg in args)
             {
                 if (i == 0) { apiUrlHost = arg; }
@@ -72,6 +72,9 @@ namespace POSIntegrator
                 Console.WriteLine("Invalid Database!");
             }
 
+            Controllers.MstItemController objItem = new Controllers.MstItemController();
+            Controllers.MstCustomerController objCustomer = new Controllers.MstCustomerController();
+            Controllers.MstSupplierController objSupplier = new Controllers.MstSupplierController();
             Controllers.TrnCollectionController objCollection = new Controllers.TrnCollectionController();
             Controllers.TrnStockTransferInController objStockTransferIn = new Controllers.TrnStockTransferInController();
             Controllers.TrnStockTransferOutController objStockTransferOut = new Controllers.TrnStockTransferOutController();
@@ -79,9 +82,6 @@ namespace POSIntegrator
             Controllers.TrnStockOutController objStockOut = new Controllers.TrnStockOutController();
             Controllers.TrnReceivingReceiptController objReceivingReceipt = new Controllers.TrnReceivingReceiptController();
             Controllers.TrnArticlePriceController objArticlePrice = new Controllers.TrnArticlePriceController();
-            Controllers.MstItemController objItem = new Controllers.MstItemController();
-            Controllers.MstCustomerController objCustomer = new Controllers.MstCustomerController();
-            Controllers.MstSupplierController objSupplier = new Controllers.MstSupplierController();
 
             while (true)
             {
@@ -93,16 +93,16 @@ namespace POSIntegrator
                         var branchCode = sysSettings.FirstOrDefault().BranchCode;
                         var userCode = sysSettings.FirstOrDefault().UserCode;
 
-                        objCollection.GetCollection(database, apiUrlHost, branchCode, userCode);
-                        objStockTransferIn.GetStockTransferIN(database, apiUrlHost, branchCode);
-                        objStockTransferOut.GetStockTransferOT(database, apiUrlHost, branchCode);
-                        objStockIn.GetStockIn(database, apiUrlHost, branchCode);
-                        objStockOut.GetStockOut(database, apiUrlHost, branchCode);
-                        objReceivingReceipt.GetReceivingReceipt(database, apiUrlHost, branchCode);
-                        objArticlePrice.GetItemPrice(database, apiUrlHost, branchCode);
                         objItem.GetItem(database, apiUrlHost);
                         objCustomer.GetCustomer(database, apiUrlHost);
                         objSupplier.GetSupplier(database, apiUrlHost);
+                        objCollection.GetCollection(database, apiUrlHost, branchCode, userCode);
+                        objArticlePrice.GetItemPrice(database, apiUrlHost, branchCode);
+                        objStockIn.GetStockIn(database, apiUrlHost, branchCode);
+                        objStockOut.GetStockOut(database, apiUrlHost, branchCode);
+                        objStockTransferIn.GetStockTransferIN(database, apiUrlHost, branchCode);
+                        objStockTransferOut.GetStockTransferOT(database, apiUrlHost, branchCode);
+                        objReceivingReceipt.GetReceivingReceipt(database, apiUrlHost, branchCode);
                     }
                 }
 
