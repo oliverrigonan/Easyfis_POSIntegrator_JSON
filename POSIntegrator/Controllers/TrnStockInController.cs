@@ -246,5 +246,210 @@ namespace POSIntegrator.Controllers
                 Console.WriteLine(e);
             }
         }
+
+        // ==============================
+        // CREATE Stock In (Sales Return)
+        // ==============================
+        public void CreateStockInSalesReturn(String database, String apiUrlHost, String branchCode, String userCode)
+        {
+            try
+            {
+                String jsonPath = "d:/innosoft/json/return";
+
+                var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
+                posData = new Data.POSDatabaseDataContext(newConnectionString);
+
+                var discounts = from d in posData.MstDiscounts
+                                select d;
+
+                if (discounts.Any())
+                {
+                    var taxes = from d in posData.MstTaxes
+                                select d;
+
+                    if (taxes.Any())
+                    {
+                        var terms = from d in posData.MstTerms
+                                    select d;
+
+                        if (terms.Any())
+                        {
+                            var stockIns = from d in posData.TrnStockIns
+                                           where d.IsReturn == true
+                                           && d.CollectionId != null
+                                           && d.PostCode == null
+                                           && d.IsLocked == true
+                                           select d;
+
+                            if (stockIns.Any())
+                            {
+                                foreach (var stockIn in stockIns)
+                                {
+                                    var stockInLines = from d in posData.TrnStockInLines
+                                                       where d.StockInId == stockIn.Id
+                                                       select d;
+
+                                    if (stockInLines.Any())
+                                    {
+                                        List<TrnCollectionLines> listCollectionLines = new List<TrnCollectionLines>();
+                                        foreach (var stockInLine in stockInLines)
+                                        {
+                                            listCollectionLines.Add(new TrnCollectionLines()
+                                            {
+                                                ItemManualArticleCode = stockInLine.MstItem.BarCode,
+                                                Particulars = stockInLine.MstItem.ItemDescription,
+                                                Unit = stockInLine.MstUnit.Unit,
+                                                Quantity = stockInLine.Quantity * -1,
+                                                Price = stockInLine.Cost * -1,
+                                                Discount = discounts.FirstOrDefault().Discount,
+                                                DiscountAmount = 0,
+                                                NetPrice = (stockInLine.Cost * -1),
+                                                Amount = ((stockInLine.Quantity * -1) * (stockInLine.Cost * -1)) * -1,
+                                                VAT = taxes.FirstOrDefault().Tax,
+                                                SalesItemTimeStamp = DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss.fff", CultureInfo.InvariantCulture)
+                                            });
+                                        }
+
+                                        var collectionData = new POSIntegrator.TrnCollection()
+                                        {
+                                            SIDate = stockIn.StockInDate.ToShortDateString(),
+                                            BranchCode = branchCode,
+                                            CustomerManualArticleCode = stockIn.TrnCollection.TrnSale.MstCustomer.CustomerCode,
+                                            CreatedBy = userCode,
+                                            Term = terms.FirstOrDefault().Term,
+                                            DocumentReference = stockIn.StockInNumber,
+                                            ManualSINumber = stockIn.TrnCollection.TrnSale.SalesNumber,
+                                            Remarks = "Return from Customer",
+                                            ListPOSIntegrationTrnSalesInvoiceItem = listCollectionLines.ToList()
+                                        };
+
+                                        String json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(collectionData);
+                                        String jsonFileName = jsonPath + "\\" + stockIn.StockInNumber + ".json";
+
+                                        if (!File.Exists(jsonFileName))
+                                        {
+                                            File.WriteAllText(jsonFileName, json);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                SendStockInSalesReturn(database, apiUrlHost);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+
+        // ============================
+        // SEND Stock In (Sales Return)
+        // ============================
+        public void SendStockInSalesReturn(String database, String apiUrlHost)
+        {
+            try
+            {
+                String jsonPath = "d:/innosoft/json/return";
+                List<String> files = new List<String>(Directory.EnumerateFiles(jsonPath));
+
+                if (files.Any())
+                {
+                    var file = files.FirstOrDefault();
+
+                    // ==============
+                    // Read json file
+                    // ==============
+                    String json;
+                    using (StreamReader r = new StreamReader(file))
+                    {
+                        json = r.ReadToEnd();
+                    }
+
+                    // ===================
+                    // Send json to server
+                    // ===================
+                    var httpWebRequest = (HttpWebRequest)WebRequest.Create("http://" + apiUrlHost + "/api/add/POSIntegration/salesInvoice");
+                    httpWebRequest.ContentType = "application/json";
+                    httpWebRequest.Method = "POST";
+
+                    using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+                    {
+                        var json_serializer = new JavaScriptSerializer();
+                        POSIntegrator.TrnCollection c = json_serializer.Deserialize<POSIntegrator.TrnCollection>(json);
+
+                        Console.WriteLine("Sending Collection...");
+                        streamWriter.Write(new JavaScriptSerializer().Serialize(c));
+                    }
+
+                    // ================
+                    // Process response
+                    // ================
+                    var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+                    using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+                    {
+                        var result = streamReader.ReadToEnd();
+                        if (result != null)
+                        {
+                            var json_serializer = new JavaScriptSerializer();
+                            POSIntegrator.TrnCollection c = json_serializer.Deserialize<POSIntegrator.TrnCollection>(json);
+
+                            Console.WriteLine("Collection No.: " + c.DocumentReference);
+                            Console.WriteLine("Customer Code: " + c.CustomerManualArticleCode);
+                            Console.WriteLine("Sales No.: " + c.ManualSINumber);
+                            Console.WriteLine("Remarks: " + c.Remarks);
+                            Console.WriteLine("Post Code: " + result.Replace("\"", ""));
+                            Console.WriteLine("Sent Succesful!");
+                            Console.WriteLine();
+
+                            var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
+                            posData = new Data.POSDatabaseDataContext(newConnectionString);
+
+                            var stockIns = from d in posData.TrnStockIns
+                                           where d.StockInNumber.Equals(c.DocumentReference)
+                                           select d;
+
+                            if (stockIns.Any())
+                            {
+                                var stockIn = stockIns.FirstOrDefault();
+                                stockIn.PostCode = result.Replace("\"", "");
+                                posData.SubmitChanges();
+
+                                File.Delete(file);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (WebException we)
+            {
+                var resp = new StreamReader(we.Response.GetResponseStream()).ReadToEnd();
+
+                String jsonPath = "d:/innosoft/json/SI";
+                List<String> files = new List<String>(Directory.EnumerateFiles(jsonPath));
+                if (files.Any())
+                {
+                    var file = files.FirstOrDefault();
+
+                    String json;
+                    using (StreamReader r = new StreamReader(file))
+                    {
+                        json = r.ReadToEnd();
+                    }
+
+                    var json_serializer = new JavaScriptSerializer();
+                    POSIntegrator.TrnCollection c = json_serializer.Deserialize<POSIntegrator.TrnCollection>(json);
+
+                    Console.WriteLine("Collection No.: " + c.DocumentReference);
+                    Console.WriteLine("Customer Code: " + c.CustomerManualArticleCode);
+                    Console.WriteLine("Sales No.: " + c.ManualSINumber);
+                    Console.WriteLine("Remarks: " + c.Remarks);
+                    Console.WriteLine(resp.Replace("\"", ""));
+                    Console.WriteLine();
+                }
+            }
+        }
     }
 }

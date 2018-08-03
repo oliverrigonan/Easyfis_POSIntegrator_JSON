@@ -1,5 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8"?><Database Name="pos" Class="POSDatabaseDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
-  <Connection Mode="AppSettings" ConnectionString="Data Source=localhost;Initial Catalog=pos;User ID=sa" SettingsObjectName="POSIntegrator.Properties.Settings" SettingsPropertyName="posConnectionString1" Provider="System.Data.SqlClient" />
+﻿<?xml version="1.0" encoding="utf-8"?><Database Name="pos13" Class="POSDatabaseDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
+  <Connection Mode="AppSettings" ConnectionString="Data Source=localhost;Initial Catalog=pos13;Persist Security Info=True;User ID=sa" SettingsObjectName="POSIntegrator.Properties.Settings" SettingsPropertyName="pos13ConnectionString" Provider="System.Data.SqlClient" />
   <Table Name="dbo.MstAccount" Member="MstAccounts">
     <Type Name="MstAccount">
       <Column Name="Id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
@@ -489,12 +489,12 @@
       <Column Name="CheckedBy" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="ApprovedBy" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="IsCancelled" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="PostCode" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
       <Column Name="IsLocked" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
       <Column Name="EntryUserId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="EntryDateTime" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
       <Column Name="UpdateUserId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="UpdateDateTime" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
-      <Column Name="PostCode" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
       <Association Name="TrnCollection_TrnCollectionLine" Member="TrnCollectionLines" ThisKey="Id" OtherKey="CollectionId" Type="TrnCollectionLine" />
       <Association Name="TrnCollection_TrnJournal" Member="TrnJournals" ThisKey="Id" OtherKey="CollectionId" Type="TrnJournal" />
       <Association Name="TrnCollection_TrnStockIn" Member="TrnStockIns" ThisKey="Id" OtherKey="CollectionId" Type="TrnStockIn" />
@@ -841,12 +841,13 @@
       <Column Name="PreparedBy" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="CheckedBy" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="ApprovedBy" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="SalesId" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="PostCode" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
       <Column Name="IsLocked" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
       <Column Name="EntryUserId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="EntryDateTime" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
       <Column Name="UpdateUserId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="UpdateDateTime" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
-      <Column Name="SalesId" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Association Name="TrnStockIn_TrnCollectionLine" Member="TrnCollectionLines" ThisKey="Id" OtherKey="StockInId" Type="TrnCollectionLine" />
       <Association Name="TrnStockIn_TrnDisbursement" Member="TrnDisbursements" ThisKey="Id" OtherKey="StockInId" Type="TrnDisbursement" />
       <Association Name="TrnStockIn_TrnJournal" Member="TrnJournals" ThisKey="Id" OtherKey="StockInId" Type="TrnJournal" />

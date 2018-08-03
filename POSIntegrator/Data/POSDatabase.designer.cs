@@ -22,7 +22,7 @@ namespace POSIntegrator.Data
 	using System;
 	
 	
-	[global::System.Data.Linq.Mapping.DatabaseAttribute(Name="pos")]
+	[global::System.Data.Linq.Mapping.DatabaseAttribute(Name="pos13")]
 	public partial class POSDatabaseDataContext : System.Data.Linq.DataContext
 	{
 		
@@ -162,7 +162,7 @@ namespace POSIntegrator.Data
     #endregion
 		
 		public POSDatabaseDataContext() : 
-				base(global::POSIntegrator.Properties.Settings.Default.posConnectionString1, mappingSource)
+				base(global::POSIntegrator.Properties.Settings.Default.pos13ConnectionString, mappingSource)
 		{
 			OnCreated();
 		}
@@ -11449,6 +11449,8 @@ namespace POSIntegrator.Data
 		
 		private bool _IsCancelled;
 		
+		private string _PostCode;
+		
 		private bool _IsLocked;
 		
 		private int _EntryUserId;
@@ -11458,8 +11460,6 @@ namespace POSIntegrator.Data
 		private int _UpdateUserId;
 		
 		private System.DateTime _UpdateDateTime;
-		
-		private string _PostCode;
 		
 		private EntitySet<TrnCollectionLine> _TrnCollectionLines;
 		
@@ -11523,6 +11523,8 @@ namespace POSIntegrator.Data
     partial void OnApprovedByChanged();
     partial void OnIsCancelledChanging(bool value);
     partial void OnIsCancelledChanged();
+    partial void OnPostCodeChanging(string value);
+    partial void OnPostCodeChanged();
     partial void OnIsLockedChanging(bool value);
     partial void OnIsLockedChanged();
     partial void OnEntryUserIdChanging(int value);
@@ -11533,8 +11535,6 @@ namespace POSIntegrator.Data
     partial void OnUpdateUserIdChanged();
     partial void OnUpdateDateTimeChanging(System.DateTime value);
     partial void OnUpdateDateTimeChanged();
-    partial void OnPostCodeChanging(string value);
-    partial void OnPostCodeChanged();
     #endregion
 		
 		public TrnCollection()
@@ -11922,6 +11922,26 @@ namespace POSIntegrator.Data
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PostCode", DbType="NVarChar(50)")]
+		public string PostCode
+		{
+			get
+			{
+				return this._PostCode;
+			}
+			set
+			{
+				if ((this._PostCode != value))
+				{
+					this.OnPostCodeChanging(value);
+					this.SendPropertyChanging();
+					this._PostCode = value;
+					this.SendPropertyChanged("PostCode");
+					this.OnPostCodeChanged();
+				}
+			}
+		}
+		
 		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_IsLocked", DbType="Bit NOT NULL")]
 		public bool IsLocked
 		{
@@ -12026,26 +12046,6 @@ namespace POSIntegrator.Data
 					this._UpdateDateTime = value;
 					this.SendPropertyChanged("UpdateDateTime");
 					this.OnUpdateDateTimeChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PostCode", DbType="NVarChar(50)")]
-		public string PostCode
-		{
-			get
-			{
-				return this._PostCode;
-			}
-			set
-			{
-				if ((this._PostCode != value))
-				{
-					this.OnPostCodeChanging(value);
-					this.SendPropertyChanging();
-					this._PostCode = value;
-					this.SendPropertyChanged("PostCode");
-					this.OnPostCodeChanged();
 				}
 			}
 		}
@@ -20512,6 +20512,10 @@ namespace POSIntegrator.Data
 		
 		private int _ApprovedBy;
 		
+		private System.Nullable<int> _SalesId;
+		
+		private string _PostCode;
+		
 		private bool _IsLocked;
 		
 		private int _EntryUserId;
@@ -20521,8 +20525,6 @@ namespace POSIntegrator.Data
 		private int _UpdateUserId;
 		
 		private System.DateTime _UpdateDateTime;
-		
-		private System.Nullable<int> _SalesId;
 		
 		private EntitySet<TrnCollectionLine> _TrnCollectionLines;
 		
@@ -20562,6 +20564,10 @@ namespace POSIntegrator.Data
     partial void OnCheckedByChanged();
     partial void OnApprovedByChanging(int value);
     partial void OnApprovedByChanged();
+    partial void OnSalesIdChanging(System.Nullable<int> value);
+    partial void OnSalesIdChanged();
+    partial void OnPostCodeChanging(string value);
+    partial void OnPostCodeChanged();
     partial void OnIsLockedChanging(bool value);
     partial void OnIsLockedChanged();
     partial void OnEntryUserIdChanging(int value);
@@ -20572,8 +20578,6 @@ namespace POSIntegrator.Data
     partial void OnUpdateUserIdChanged();
     partial void OnUpdateDateTimeChanging(System.DateTime value);
     partial void OnUpdateDateTimeChanged();
-    partial void OnSalesIdChanging(System.Nullable<int> value);
-    partial void OnSalesIdChanged();
     #endregion
 		
 		public TrnStockIn()
@@ -20830,6 +20834,46 @@ namespace POSIntegrator.Data
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_SalesId", DbType="Int")]
+		public System.Nullable<int> SalesId
+		{
+			get
+			{
+				return this._SalesId;
+			}
+			set
+			{
+				if ((this._SalesId != value))
+				{
+					this.OnSalesIdChanging(value);
+					this.SendPropertyChanging();
+					this._SalesId = value;
+					this.SendPropertyChanged("SalesId");
+					this.OnSalesIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PostCode", DbType="NVarChar(50)")]
+		public string PostCode
+		{
+			get
+			{
+				return this._PostCode;
+			}
+			set
+			{
+				if ((this._PostCode != value))
+				{
+					this.OnPostCodeChanging(value);
+					this.SendPropertyChanging();
+					this._PostCode = value;
+					this.SendPropertyChanged("PostCode");
+					this.OnPostCodeChanged();
+				}
+			}
+		}
+		
 		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_IsLocked", DbType="Bit NOT NULL")]
 		public bool IsLocked
 		{
@@ -20926,26 +20970,6 @@ namespace POSIntegrator.Data
 					this._UpdateDateTime = value;
 					this.SendPropertyChanged("UpdateDateTime");
 					this.OnUpdateDateTimeChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_SalesId", DbType="Int")]
-		public System.Nullable<int> SalesId
-		{
-			get
-			{
-				return this._SalesId;
-			}
-			set
-			{
-				if ((this._SalesId != value))
-				{
-					this.OnSalesIdChanging(value);
-					this.SendPropertyChanging();
-					this._SalesId = value;
-					this.SendPropertyChanged("SalesId");
-					this.OnSalesIdChanged();
 				}
 			}
 		}

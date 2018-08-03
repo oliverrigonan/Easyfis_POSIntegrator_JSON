@@ -18,7 +18,7 @@ namespace POSIntegrator
         public static void Main(String[] args)
         {
             Int32 i = 0;
-            String apiUrlHost = "", database = "";
+            String apiUrlHost = "localhost:2651", database = "pos13";
             foreach (var arg in args)
             {
                 if (i == 0) { apiUrlHost = arg; }
@@ -99,6 +99,7 @@ namespace POSIntegrator
                         objCollection.GetCollection(database, apiUrlHost, branchCode, userCode);
                         objArticlePrice.GetItemPrice(database, apiUrlHost, branchCode);
                         objStockIn.GetStockIn(database, apiUrlHost, branchCode);
+                        objStockIn.CreateStockInSalesReturn(database, apiUrlHost, branchCode, userCode);
                         objStockOut.GetStockOut(database, apiUrlHost, branchCode);
                         objStockTransferIn.GetStockTransferIN(database, apiUrlHost, branchCode);
                         objStockTransferOut.GetStockTransferOT(database, apiUrlHost, branchCode);
