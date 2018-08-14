@@ -34,64 +34,63 @@ namespace POSIntegrator.Controllers
 
                 if (collections.Any())
                 {
-                    foreach (var collection in collections)
-                    {
-                        var listPayTypes = new List<String>();
+                    var collection = collections.FirstOrDefault();
 
-                        if (collection.TrnCollectionLines.Any())
+                    var listPayTypes = new List<String>();
+
+                    if (collection.TrnCollectionLines.Any())
+                    {
+                        foreach (var collectionLine in collection.TrnCollectionLines)
                         {
-                            foreach (var collectionLine in collection.TrnCollectionLines)
+                            if (collectionLine.Amount > 0)
                             {
-                                if (collectionLine.Amount > 0)
-                                {
-                                    listPayTypes.Add(collectionLine.MstPayType.PayType + ": " + collectionLine.Amount.ToString("#,##0.00"));
-                                }
+                                listPayTypes.Add(collectionLine.MstPayType.PayType + ": " + collectionLine.Amount.ToString("#,##0.00"));
                             }
                         }
+                    }
 
-                        String[] payTypes = listPayTypes.ToArray();
-                        List<TrnCollectionLines> listCollectionLines = new List<TrnCollectionLines>();
+                    String[] payTypes = listPayTypes.ToArray();
+                    List<TrnCollectionLines> listCollectionLines = new List<TrnCollectionLines>();
 
-                        if (collection.TrnSale != null)
+                    if (collection.TrnSale != null)
+                    {
+                        foreach (var salesLine in collection.TrnSale.TrnSalesLines)
                         {
-                            foreach (var salesLine in collection.TrnSale.TrnSalesLines)
+                            listCollectionLines.Add(new TrnCollectionLines()
                             {
-                                listCollectionLines.Add(new TrnCollectionLines()
-                                {
-                                    ItemManualArticleCode = salesLine.MstItem.BarCode,
-                                    Particulars = salesLine.MstItem.ItemDescription,
-                                    Unit = salesLine.MstUnit.Unit,
-                                    Quantity = salesLine.Quantity,
-                                    Price = salesLine.Price,
-                                    Discount = salesLine.MstDiscount.Discount,
-                                    DiscountAmount = salesLine.DiscountAmount,
-                                    NetPrice = salesLine.NetPrice,
-                                    Amount = salesLine.Amount,
-                                    VAT = salesLine.MstTax.Tax,
-                                    SalesItemTimeStamp = salesLine.SalesLineTimeStamp.ToString("MM/dd/yyyy HH:mm:ss.fff", CultureInfo.InvariantCulture)
-                                });
-                            }
+                                ItemManualArticleCode = salesLine.MstItem.BarCode,
+                                Particulars = salesLine.MstItem.ItemDescription,
+                                Unit = salesLine.MstUnit.Unit,
+                                Quantity = salesLine.Quantity,
+                                Price = salesLine.Price,
+                                Discount = salesLine.MstDiscount.Discount,
+                                DiscountAmount = salesLine.DiscountAmount,
+                                NetPrice = salesLine.NetPrice,
+                                Amount = salesLine.Amount,
+                                VAT = salesLine.MstTax.Tax,
+                                SalesItemTimeStamp = salesLine.SalesLineTimeStamp.ToString("MM/dd/yyyy HH:mm:ss.fff", CultureInfo.InvariantCulture)
+                            });
+                        }
 
-                            var collectionData = new POSIntegrator.TrnCollection()
-                            {
-                                SIDate = collection.CollectionDate.ToShortDateString(),
-                                BranchCode = branchCode,
-                                CustomerManualArticleCode = collection.TrnSale.MstCustomer.CustomerCode,
-                                CreatedBy = userCode,
-                                Term = collection.TrnSale.MstTerm.Term,
-                                DocumentReference = collection.CollectionNumber,
-                                ManualSINumber = collection.TrnSale.SalesNumber,
-                                Remarks = "User: " + collection.MstUser4.UserName + ", " + String.Join(", ", payTypes),
-                                ListPOSIntegrationTrnSalesInvoiceItem = listCollectionLines.ToList()
-                            };
+                        var collectionData = new POSIntegrator.TrnCollection()
+                        {
+                            SIDate = collection.CollectionDate.ToShortDateString(),
+                            BranchCode = branchCode,
+                            CustomerManualArticleCode = collection.TrnSale.MstCustomer.CustomerCode,
+                            CreatedBy = userCode,
+                            Term = collection.TrnSale.MstTerm.Term,
+                            DocumentReference = collection.CollectionNumber,
+                            ManualSINumber = collection.TrnSale.SalesNumber,
+                            Remarks = "User: " + collection.MstUser4.UserName + ", " + String.Join(", ", payTypes),
+                            ListPOSIntegrationTrnSalesInvoiceItem = listCollectionLines.ToList()
+                        };
 
-                            String json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(collectionData);
-                            String jsonFileName = jsonPath + "\\" + collection.CollectionNumber + ".json";
+                        String json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(collectionData);
+                        String jsonFileName = jsonPath + "\\" + collection.CollectionNumber + ".json";
 
-                            if (!File.Exists(jsonFileName))
-                            {
-                                File.WriteAllText(jsonFileName, json);
-                            }
+                        if (!File.Exists(jsonFileName))
+                        {
+                            File.WriteAllText(jsonFileName, json);
                         }
                     }
                 }
