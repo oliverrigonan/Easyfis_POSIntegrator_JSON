@@ -10,11 +10,6 @@ namespace POSIntegrator.Controllers
 {
     class TrnCollectionController
     {
-        // ============
-        // Data Context
-        // ============
-        private static Data.POSDatabaseDataContext posData;
-
         // ==============
         // Get Collection
         // ==============
@@ -22,22 +17,15 @@ namespace POSIntegrator.Controllers
         {
             try
             {
-                String jsonPath = "d:/innosoft/json/SI";
-
                 var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
-                posData = new Data.POSDatabaseDataContext(newConnectionString);
+                Data.POSDatabaseDataContext posData = new Data.POSDatabaseDataContext(newConnectionString);
 
-                var collections = from d in posData.TrnCollections
-                                  where d.PostCode == null
-                                  && d.CollectionNumber != "NA"
-                                  select d;
-
+                var collections = from d in posData.TrnCollections where d.PostCode == null && d.CollectionNumber != "NA" && d.IsLocked == true select d;
                 if (collections.Any())
                 {
                     var collection = collections.FirstOrDefault();
 
                     var listPayTypes = new List<String>();
-
                     if (collection.TrnCollectionLines.Any())
                     {
                         foreach (var collectionLine in collection.TrnCollectionLines)
@@ -72,7 +60,7 @@ namespace POSIntegrator.Controllers
                             });
                         }
 
-                        var collectionData = new POSIntegrator.TrnCollection()
+                        var collectionData = new TrnCollection()
                         {
                             SIDate = collection.CollectionDate.ToShortDateString(),
                             BranchCode = branchCode,
@@ -85,99 +73,65 @@ namespace POSIntegrator.Controllers
                             ListPOSIntegrationTrnSalesInvoiceItem = listCollectionLines.ToList()
                         };
 
-                        String json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(collectionData);
-                        String jsonFileName = jsonPath + "\\" + collection.CollectionNumber + ".json";
+                        String json = new JavaScriptSerializer().Serialize(collectionData);
 
-                        if (!File.Exists(jsonFileName))
-                        {
-                            File.WriteAllText(jsonFileName, json);
-                        }
+                        Console.WriteLine("Sending Collection: " + collectionData.DocumentReference);
+                        SendCollection(database, apiUrlHost, json);
                     }
                 }
-
-                SendSIJsonFiles(database, apiUrlHost);
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Console.WriteLine(e.Message);
             }
         }
 
-        // ==================
-        // Send SI Json Files
-        // ==================
-        public void SendSIJsonFiles(String database, String apiUrlHost)
+        // ===============
+        // Send Collection
+        // ===============
+        public void SendCollection(String database, String apiUrlHost, String json)
         {
             try
             {
-                String jsonPath = "d:/innosoft/json/SI";
-                List<String> files = new List<String>(Directory.EnumerateFiles(jsonPath));
+                // ============
+                // Http Request
+                // ============
+                var httpWebRequest = (HttpWebRequest)WebRequest.Create("http://" + apiUrlHost + "/api/add/POSIntegration/salesInvoice");
+                httpWebRequest.ContentType = "application/json";
+                httpWebRequest.Method = "POST";
 
-                if (files.Any())
+                // ====
+                // Data
+                // ====
+                using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
                 {
-                    var file = files.FirstOrDefault();
+                    TrnCollection collection = new JavaScriptSerializer().Deserialize<TrnCollection>(json);
+                    streamWriter.Write(new JavaScriptSerializer().Serialize(collection));
+                }
 
-                    // ==============
-                    // Read json file
-                    // ==============
-                    String json;
-                    using (StreamReader r = new StreamReader(file))
+                // ================
+                // Process Response
+                // ================
+                var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+                using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+                {
+                    var result = streamReader.ReadToEnd();
+                    if (result != null)
                     {
-                        json = r.ReadToEnd();
-                    }
+                        var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
+                        Data.POSDatabaseDataContext posData = new Data.POSDatabaseDataContext(newConnectionString);
 
-                    // ===================
-                    // Send json to server
-                    // ===================
-                    var httpWebRequest = (HttpWebRequest)WebRequest.Create("http://" + apiUrlHost + "/api/add/POSIntegration/salesInvoice");
-                    httpWebRequest.ContentType = "application/json";
-                    httpWebRequest.Method = "POST";
-
-                    using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
-                    {
-                        var json_serializer = new JavaScriptSerializer();
-                        POSIntegrator.TrnCollection c = json_serializer.Deserialize<POSIntegrator.TrnCollection>(json);
-
-                        Console.WriteLine("Sending Collection...");
-                        streamWriter.Write(new JavaScriptSerializer().Serialize(c));
-                    }
-
-                    // ================
-                    // Process response
-                    // ================
-                    var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                    using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
-                    {
-                        var result = streamReader.ReadToEnd();
-                        if (result != null)
+                        TrnCollection collection = new JavaScriptSerializer().Deserialize<TrnCollection>(json);
+                        var currentCollection = from d in posData.TrnCollections where d.CollectionNumber.Equals(collection.DocumentReference) select d;
+                        if (currentCollection.Any())
                         {
-                            var json_serializer = new JavaScriptSerializer();
-                            POSIntegrator.TrnCollection c = json_serializer.Deserialize<POSIntegrator.TrnCollection>(json);
-
-                            Console.WriteLine("Collection No.: " + c.DocumentReference);
-                            Console.WriteLine("Customer Code: " + c.CustomerManualArticleCode);
-                            Console.WriteLine("Sales No.: " + c.ManualSINumber);
-                            Console.WriteLine("Remarks: " + c.Remarks);
-                            Console.WriteLine("Post Code: " + result.Replace("\"", ""));
-                            Console.WriteLine("Sent Succesful!");
-                            Console.WriteLine();
-
-                            var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
-                            posData = new Data.POSDatabaseDataContext(newConnectionString);
-
-                            var collections = from d in posData.TrnCollections
-                                              where d.CollectionNumber.Equals(c.DocumentReference)
-                                              select d;
-
-                            if (collections.Any())
-                            {
-                                var collection = collections.FirstOrDefault();
-                                collection.PostCode = result.Replace("\"", "");
-                                posData.SubmitChanges();
-
-                                File.Delete(file);
-                            }
+                            var updateCollection = currentCollection.FirstOrDefault();
+                            updateCollection.PostCode = result.Replace("\"", "");
+                            posData.SubmitChanges();
                         }
+
+                        Console.WriteLine("Send Succesful!");
+                        Console.WriteLine();
                     }
                 }
             }
@@ -185,28 +139,8 @@ namespace POSIntegrator.Controllers
             {
                 var resp = new StreamReader(we.Response.GetResponseStream()).ReadToEnd();
 
-                String jsonPath = "d:/innosoft/json/SI";
-                List<String> files = new List<String>(Directory.EnumerateFiles(jsonPath));
-                if (files.Any())
-                {
-                    var file = files.FirstOrDefault();
-
-                    String json;
-                    using (StreamReader r = new StreamReader(file))
-                    {
-                        json = r.ReadToEnd();
-                    }
-
-                    var json_serializer = new JavaScriptSerializer();
-                    POSIntegrator.TrnCollection c = json_serializer.Deserialize<POSIntegrator.TrnCollection>(json);
-
-                    Console.WriteLine("Collection No.: " + c.DocumentReference);
-                    Console.WriteLine("Customer Code: " + c.CustomerManualArticleCode);
-                    Console.WriteLine("Sales No.: " + c.ManualSINumber);
-                    Console.WriteLine("Remarks: " + c.Remarks);
-                    Console.WriteLine(resp.Replace("\"", ""));
-                    Console.WriteLine();
-                }
+                Console.WriteLine(resp.Replace("\"", ""));
+                Console.WriteLine();
             }
         }
     }

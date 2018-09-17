@@ -84,10 +84,11 @@
   <ItemGroup>
     <Compile Include="Controllers\MstCustomerController.cs" />
     <Compile Include="Controllers\MstSupplierController.cs" />
-    <Compile Include="Controllers\TrnArticlePriceController.cs" />
+    <Compile Include="Controllers\TrnItemPriceController.cs" />
     <Compile Include="Controllers\TrnCollectionController.cs" />
     <Compile Include="Controllers\MstItemController.cs" />
     <Compile Include="Controllers\TrnReceivingReceiptController.cs" />
+    <Compile Include="Controllers\TrnSalesReturnController.cs" />
     <Compile Include="Controllers\TrnStockInController.cs" />
     <Compile Include="Controllers\TrnStockOutController.cs" />
     <Compile Include="Controllers\TrnStockTransferInController.cs" />

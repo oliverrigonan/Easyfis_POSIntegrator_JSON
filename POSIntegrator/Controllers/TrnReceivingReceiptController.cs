@@ -12,11 +12,6 @@ namespace POSIntegrator.Controllers
 {
     class TrnReceivingReceiptController
     {
-        // ============
-        // Data Context
-        // ============
-        private static Data.POSDatabaseDataContext posData;
-
         // ===================
         // Fill Leading Zeroes
         // ===================
@@ -34,7 +29,7 @@ namespace POSIntegrator.Controllers
         }
 
         // =====================
-        // GET Receiving Receipt
+        // Get Receiving Receipt
         // =====================
         public void GetReceivingReceipt(String database, String apiUrlHost, String branchCode)
         {
@@ -43,204 +38,112 @@ namespace POSIntegrator.Controllers
                 DateTime dateTimeToday = DateTime.Now;
                 String receivingReceiptDate = dateTimeToday.ToString("MM-dd-yyyy", CultureInfo.InvariantCulture);
 
+                // ============
+                // Http Request
+                // ============
                 var httpWebRequest = (HttpWebRequest)WebRequest.Create("http://" + apiUrlHost + "/api/get/POSIntegration/receivingReceipt/" + receivingReceiptDate + "/" + branchCode);
                 httpWebRequest.Method = "GET";
                 httpWebRequest.Accept = "application/json";
 
+                // ================
+                // Process Response
+                // ================
                 var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
                 using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
                 {
                     var result = streamReader.ReadToEnd();
                     JavaScriptSerializer js = new JavaScriptSerializer();
-                    List<POSIntegrator.TrnReceivingReceipt> receivingReceiptLists = (List<POSIntegrator.TrnReceivingReceipt>)js.Deserialize(result, typeof(List<POSIntegrator.TrnReceivingReceipt>));
+                    List<TrnReceivingReceipt> receivingReceipts = (List<TrnReceivingReceipt>)js.Deserialize(result, typeof(List<TrnReceivingReceipt>));
 
-                    foreach (var receivingReceiptList in receivingReceiptLists)
+                    if (receivingReceipts.Any())
                     {
-                        if (receivingReceiptList.ListPOSIntegrationTrnReceivingReceiptItem.Any())
+                        var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
+                        Data.POSDatabaseDataContext posData = new Data.POSDatabaseDataContext(newConnectionString);
+
+                        foreach (var receivingReceipt in receivingReceipts)
                         {
-                            List<TrnReceivingReceiptItem> listReceivingReceiptItem = new List<TrnReceivingReceiptItem>();
-                            foreach (var receivingReceiptListItem in receivingReceiptList.ListPOSIntegrationTrnReceivingReceiptItem)
+                            if (receivingReceipt.ListPOSIntegrationTrnReceivingReceiptItem.Any())
                             {
-                                listReceivingReceiptItem.Add(new TrnReceivingReceiptItem()
+                                var currentStockIn = from d in posData.TrnStockIns where d.Remarks.Equals("RR-" + receivingReceipt.BranchCode + "-" + receivingReceipt.RRNumber) && d.TrnStockInLines.Count() > 0 select d;
+                                if (!currentStockIn.Any())
                                 {
-                                    RRId = receivingReceiptListItem.RRId,
-                                    ItemCode = receivingReceiptListItem.ItemCode,
-                                    Item = receivingReceiptListItem.Item,
-                                    BranchCode = receivingReceiptListItem.BranchCode,
-                                    Unit = receivingReceiptListItem.Unit,
-                                    Quantity = receivingReceiptListItem.Quantity,
-                                    Cost = receivingReceiptListItem.Cost,
-                                    Amount = receivingReceiptListItem.Amount
-                                });
-                            }
+                                    Console.WriteLine("Saving Stock In: RR-" + receivingReceipt.BranchCode + "-" + receivingReceipt.RRNumber);
 
-                            var stockTransferData = new POSIntegrator.TrnReceivingReceipt()
-                            {
-                                BranchCode = receivingReceiptList.BranchCode,
-                                Branch = receivingReceiptList.Branch,
-                                RRNumber = receivingReceiptList.RRNumber,
-                                RRDate = receivingReceiptList.RRDate,
-                                ListPOSIntegrationTrnReceivingReceiptItem = receivingReceiptList.ListPOSIntegrationTrnReceivingReceiptItem.ToList()
-                            };
+                                    var defaultPeriod = from d in posData.MstPeriods select d;
+                                    var defaultSettings = from d in posData.SysSettings select d;
 
-                            String jsonPath = "d:/innosoft/json/RR";
-                            String fileName = "RR-" + receivingReceiptList.BranchCode + "-" + receivingReceiptList.RRNumber;
+                                    var lastStockInNumber = from d in posData.TrnStockIns.OrderByDescending(d => d.Id) select d;
+                                    var stockInNumberResult = defaultPeriod.FirstOrDefault().Period + "-000001";
 
-                            String json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(stockTransferData);
-                            String jsonFileName = jsonPath + "\\" + fileName + ".json";
-                            File.WriteAllText(jsonFileName, json);
-
-                            var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
-                            posData = new Data.POSDatabaseDataContext(newConnectionString);
-
-                            var stockIn = from d in posData.TrnStockIns
-                                          where d.Remarks.Equals(fileName)
-                                          && d.TrnStockInLines.Count() > 0
-                                          select d;
-
-                            if (!stockIn.Any())
-                            {
-                                Console.WriteLine("Saving Receiving Receipt...");
-                                InsertReceivingReceipt(database);
-                            }
-                            else
-                            {
-                                File.Delete(jsonFileName);
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-        }
-
-        // ========================
-        // INSERT Receiving Receipt
-        // ========================
-        public void InsertReceivingReceipt(String database)
-        {
-            try
-            {
-                String jsonPath = "d:/innosoft/json/RR";
-                List<String> files = new List<String>(Directory.EnumerateFiles(jsonPath));
-                foreach (var file in files)
-                {
-                    // ==============
-                    // Read json file
-                    // ==============
-                    String json;
-                    using (StreamReader r = new StreamReader(file))
-                    {
-                        json = r.ReadToEnd();
-                    }
-
-                    var json_serializer = new JavaScriptSerializer();
-                    POSIntegrator.TrnReceivingReceipt rr = json_serializer.Deserialize<POSIntegrator.TrnReceivingReceipt>(json);
-
-                    var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
-                    posData = new Data.POSDatabaseDataContext(newConnectionString);
-
-                    String fileName = "RR-" + rr.BranchCode + "-" + rr.RRNumber;
-                    var stockIn = from d in posData.TrnStockIns
-                                  where d.Remarks.Equals(fileName)
-                                  && d.TrnStockInLines.Count() > 0
-                                  select d;
-
-                    if (!stockIn.Any())
-                    {
-                        var defaultPeriod = from d in posData.MstPeriods select d;
-                        var defaultSettings = from d in posData.SysSettings select d;
-
-                        var lastStockInNumber = from d in posData.TrnStockIns.OrderByDescending(d => d.Id) select d;
-                        var stockInNumberResult = defaultPeriod.FirstOrDefault().Period + "-000001";
-
-                        if (lastStockInNumber.Any())
-                        {
-                            var stockInNumberSplitStrings = lastStockInNumber.FirstOrDefault().StockInNumber;
-                            Int32 secondIndex = stockInNumberSplitStrings.IndexOf('-', stockInNumberSplitStrings.IndexOf('-'));
-                            var stockInNumberSplitStringValue = stockInNumberSplitStrings.Substring(secondIndex + 1);
-                            var stockInNumber = Convert.ToInt32(stockInNumberSplitStringValue) + 000001;
-                            stockInNumberResult = defaultPeriod.FirstOrDefault().Period + "-" + FillLeadingZeroes(stockInNumber, 6);
-                        }
-
-                        Data.TrnStockIn newStockIn = new Data.TrnStockIn
-                        {
-                            PeriodId = defaultPeriod.FirstOrDefault().Id,
-                            StockInDate = Convert.ToDateTime(rr.RRDate),
-                            StockInNumber = stockInNumberResult,
-                            SupplierId = defaultSettings.FirstOrDefault().PostSupplierId,
-                            Remarks = fileName,
-                            IsReturn = false,
-                            CollectionId = null,
-                            PurchaseOrderId = null,
-                            PreparedBy = defaultSettings.FirstOrDefault().PostUserId,
-                            CheckedBy = defaultSettings.FirstOrDefault().PostUserId,
-                            ApprovedBy = defaultSettings.FirstOrDefault().PostUserId,
-                            IsLocked = true,
-                            EntryUserId = defaultSettings.FirstOrDefault().PostUserId,
-                            EntryDateTime = DateTime.Now,
-                            UpdateUserId = defaultSettings.FirstOrDefault().PostUserId,
-                            UpdateDateTime = DateTime.Now,
-                            SalesId = null
-                        };
-
-                        posData.TrnStockIns.InsertOnSubmit(newStockIn);
-                        posData.SubmitChanges();
-
-                        foreach (var item in rr.ListPOSIntegrationTrnReceivingReceiptItem.ToList())
-                        {
-                            var items = from d in posData.MstItems
-                                        where d.BarCode.Equals(item.ItemCode)
-                                        select d;
-
-                            if (items.Any())
-                            {
-                                var units = from d in posData.MstUnits
-                                            where d.Unit.Equals(item.Unit)
-                                            select d;
-
-                                if (units.Any())
-                                {
-                                    Data.TrnStockInLine newStockInLine = new Data.TrnStockInLine
+                                    if (lastStockInNumber.Any())
                                     {
-                                        StockInId = newStockIn.Id,
-                                        ItemId = items.FirstOrDefault().Id,
-                                        UnitId = units.FirstOrDefault().Id,
-                                        Quantity = item.Quantity,
-                                        Cost = item.Cost,
-                                        Amount = item.Amount,
-                                        ExpiryDate = items.FirstOrDefault().ExpiryDate,
-                                        LotNumber = items.FirstOrDefault().LotNumber,
-                                        AssetAccountId = items.FirstOrDefault().AssetAccountId,
-                                        Price = items.FirstOrDefault().Price
-                                    };
-
-                                    posData.TrnStockInLines.InsertOnSubmit(newStockInLine);
-
-                                    var currentItem = from d in posData.MstItems
-                                                      where d.Id == newStockInLine.ItemId
-                                                      select d;
-
-                                    if (currentItem.Any())
-                                    {
-                                        Decimal currentOnHandQuantity = currentItem.FirstOrDefault().OnhandQuantity;
-                                        Decimal totalQuantity = currentOnHandQuantity + Convert.ToDecimal(item.Quantity);
-
-                                        var updateItem = currentItem.FirstOrDefault();
-                                        updateItem.OnhandQuantity = totalQuantity;
+                                        var stockInNumberSplitStrings = lastStockInNumber.FirstOrDefault().StockInNumber;
+                                        Int32 secondIndex = stockInNumberSplitStrings.IndexOf('-', stockInNumberSplitStrings.IndexOf('-'));
+                                        var stockInNumberSplitStringValue = stockInNumberSplitStrings.Substring(secondIndex + 1);
+                                        var stockInNumber = Convert.ToInt32(stockInNumberSplitStringValue) + 000001;
+                                        stockInNumberResult = defaultPeriod.FirstOrDefault().Period + "-" + FillLeadingZeroes(stockInNumber, 6);
                                     }
 
+                                    Data.TrnStockIn newStockIn = new Data.TrnStockIn
+                                    {
+                                        PeriodId = defaultPeriod.FirstOrDefault().Id,
+                                        StockInDate = Convert.ToDateTime(receivingReceipt.RRDate),
+                                        StockInNumber = stockInNumberResult,
+                                        SupplierId = defaultSettings.FirstOrDefault().PostSupplierId,
+                                        Remarks = "RR-" + receivingReceipt.BranchCode + "-" + receivingReceipt.RRNumber,
+                                        IsReturn = false,
+                                        PreparedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                        CheckedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                        ApprovedBy = defaultSettings.FirstOrDefault().PostUserId,
+                                        IsLocked = true,
+                                        EntryUserId = defaultSettings.FirstOrDefault().PostUserId,
+                                        EntryDateTime = DateTime.Now,
+                                        UpdateUserId = defaultSettings.FirstOrDefault().PostUserId,
+                                        UpdateDateTime = DateTime.Now
+                                    };
+
+                                    posData.TrnStockIns.InsertOnSubmit(newStockIn);
                                     posData.SubmitChanges();
 
-                                    Console.WriteLine("Receiving Receipt: " + fileName);
-                                    Console.WriteLine("Remarks: " + fileName);
+                                    if (receivingReceipt.ListPOSIntegrationTrnReceivingReceiptItem.Any())
+                                    {
+                                        foreach (var item in receivingReceipt.ListPOSIntegrationTrnReceivingReceiptItem.ToList())
+                                        {
+                                            var currentItem = from d in posData.MstItems where d.BarCode.Equals(item.ItemCode) select d;
+                                            if (currentItem.Any())
+                                            {
+                                                var currentItemUnit = from d in posData.MstUnits where d.Unit.Equals(item.Unit) select d;
+                                                if (currentItemUnit.Any())
+                                                {
+                                                    Data.TrnStockInLine newStockInLine = new Data.TrnStockInLine
+                                                    {
+                                                        StockInId = newStockIn.Id,
+                                                        ItemId = currentItem.FirstOrDefault().Id,
+                                                        UnitId = currentItemUnit.FirstOrDefault().Id,
+                                                        Quantity = item.Quantity,
+                                                        Cost = item.Cost,
+                                                        Amount = item.Amount,
+                                                        ExpiryDate = currentItem.FirstOrDefault().ExpiryDate,
+                                                        LotNumber = currentItem.FirstOrDefault().LotNumber,
+                                                        AssetAccountId = currentItem.FirstOrDefault().AssetAccountId,
+                                                        Price = currentItem.FirstOrDefault().Price
+                                                    };
+
+                                                    posData.TrnStockInLines.InsertOnSubmit(newStockInLine);
+
+                                                    var updateItem = currentItem.FirstOrDefault();
+                                                    updateItem.OnhandQuantity = currentItem.FirstOrDefault().OnhandQuantity + Convert.ToDecimal(item.Quantity);
+
+                                                    posData.SubmitChanges();
+
+                                                    Console.WriteLine("* " + currentItem.FirstOrDefault().ItemDescription);
+                                                }
+                                            }
+                                        }
+                                    }
+
                                     Console.WriteLine("Save Successful!");
                                     Console.WriteLine();
-
-                                    File.Delete(file);
                                 }
                             }
                         }
@@ -249,7 +152,7 @@ namespace POSIntegrator.Controllers
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Console.WriteLine(e.Message);
             }
         }
     }

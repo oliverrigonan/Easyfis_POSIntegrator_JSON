@@ -11,12 +11,7 @@ namespace POSIntegrator.Controllers
     class MstSupplierController
     {
         // ============
-        // Data Context
-        // ============
-        private static Data.POSDatabaseDataContext posData;
-
-        // ============
-        // GET Supplier
+        // Get Supplier
         // ============
         public void GetSupplier(String database, String apiUrlHost)
         {
@@ -25,230 +20,139 @@ namespace POSIntegrator.Controllers
                 DateTime dateTimeToday = DateTime.Now;
                 String currentDate = dateTimeToday.ToString("MM-dd-yyyy", CultureInfo.InvariantCulture);
 
+                // ============
+                // Http Request
+                // ============
                 var httpWebRequest = (HttpWebRequest)WebRequest.Create("http://" + apiUrlHost + "/api/get/POSIntegration/supplier/" + currentDate);
                 httpWebRequest.Method = "GET";
                 httpWebRequest.Accept = "application/json";
 
+                // ================
+                // Process Response
+                // ================
                 var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
                 using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
                 {
                     var result = streamReader.ReadToEnd();
                     JavaScriptSerializer js = new JavaScriptSerializer();
-                    List<POSIntegrator.MstSupplier> supplierLists = (List<POSIntegrator.MstSupplier>)js.Deserialize(result, typeof(List<POSIntegrator.MstSupplier>));
+                    List<MstSupplier> supplierLists = (List<MstSupplier>)js.Deserialize(result, typeof(List<MstSupplier>));
 
-                    foreach (var supplierList in supplierLists)
+                    if (supplierLists.Any())
                     {
-                        var supplierData = new POSIntegrator.MstSupplier()
-                        {
-                            Article = supplierList.Article,
-                            Address = supplierList.Address,
-                            ContactNumber = supplierList.ContactNumber,
-                            Term = supplierList.Term,
-                            TaxNumber = supplierList.TaxNumber,
-                        };
-
-                        String jsonPath = "d:/innosoft/json/master";
-                        String fileName = "supplier-" + supplierList.Article;
-
-                        foreach (char c in System.IO.Path.GetInvalidFileNameChars())
-                        {
-                            fileName = fileName.Replace(c, '_');
-                        }
-
-                        String json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(supplierData);
-                        String jsonFileName = jsonPath + "\\" + fileName + ".json";
-
                         var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
-                        posData = new Data.POSDatabaseDataContext(newConnectionString);
+                        Data.POSDatabaseDataContext posData = new Data.POSDatabaseDataContext(newConnectionString);
 
-                        var suppliers = from d in posData.MstSuppliers
-                                        where d.Supplier.Equals(supplierList.Article)
-                                        select d;
-
-                        if (suppliers.Any())
+                        foreach (var supplier in supplierLists)
                         {
-                            Boolean foundChanges = false;
-
-                            if (!foundChanges)
-                            {
-                                if (!suppliers.FirstOrDefault().Supplier.Equals(supplierList.Article))
-                                {
-                                    foundChanges = true;
-                                }
-                            }
-
-                            if (!foundChanges)
-                            {
-                                if (!suppliers.FirstOrDefault().Address.Equals(supplierList.Address))
-                                {
-                                    foundChanges = true;
-                                }
-                            }
-
-                            if (!foundChanges)
-                            {
-                                if (!suppliers.FirstOrDefault().CellphoneNumber.Equals(supplierList.ContactNumber))
-                                {
-                                    foundChanges = true;
-                                }
-                            }
-
-                            if (!foundChanges)
-                            {
-                                if (!suppliers.FirstOrDefault().MstTerm.Term.Equals(supplierList.Term))
-                                {
-                                    foundChanges = true;
-                                }
-                            }
-
-                            if (!foundChanges)
-                            {
-                                if (!suppliers.FirstOrDefault().TIN.Equals(supplierList.TaxNumber))
-                                {
-                                    foundChanges = true;
-                                }
-                            }
-
-                            if (foundChanges)
-                            {
-                                File.WriteAllText(jsonFileName, json);
-                                Console.WriteLine("Updating Supplier...");
-
-                                UpdateSupplier(database);
-                            }
-                        }
-                        else
-                        {
-                            var terms = from d in posData.MstTerms
-                                        where d.Term.Equals(supplierList.Term)
-                                        select d;
-
+                            var terms = from d in posData.MstTerms where d.Term.Equals(supplier.Term) select d;
                             if (terms.Any())
-                            {
-                                File.WriteAllText(jsonFileName, json);
-                                Console.WriteLine("Saving Supplier...");
-
-                                UpdateSupplier(database);
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-        }
-
-        // ===============
-        // UPDATE Supplier
-        // ===============
-        public void UpdateSupplier(String database)
-        {
-            try
-            {
-                String jsonPath = "d:/innosoft/json/master";
-                List<String> files = new List<String>(Directory.EnumerateFiles(jsonPath));
-
-                foreach (var file in files)
-                {
-                    // ==============
-                    // Read json file
-                    // ==============
-                    String json;
-                    using (StreamReader r = new StreamReader(file))
-                    {
-                        json = r.ReadToEnd();
-                    }
-
-                    var json_serializer = new JavaScriptSerializer();
-                    POSIntegrator.MstSupplier supplier = json_serializer.Deserialize<POSIntegrator.MstSupplier>(json);
-
-                    var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
-                    posData = new Data.POSDatabaseDataContext(newConnectionString);
-
-                    var accounts = from d in posData.MstAccounts
-                                   select d;
-
-                    if (accounts.Any())
-                    {
-                        String supplierTerm = supplier.Term;
-
-                        var terms = from d in posData.MstTerms
-                                    where d.Term.Equals(supplierTerm)
-                                    select d;
-
-                        if (terms.Any())
-                        {
-                            var suppliers = from d in posData.MstSuppliers
-                                            where d.Supplier.Equals(supplier.Article)
-                                            select d;
-
-                            if (!suppliers.Any())
                             {
                                 var defaultSettings = from d in posData.SysSettings select d;
 
-                                Data.MstSupplier newSupplier = new Data.MstSupplier
+                                var currentSupplier = from d in posData.MstSuppliers where d.Supplier.Equals(supplier.Article) select d;
+                                if (currentSupplier.Any())
                                 {
-                                    Supplier = supplier.Article,
-                                    Address = supplier.Address,
-                                    TelephoneNumber = "NA",
-                                    CellphoneNumber = supplier.ContactNumber,
-                                    FaxNumber = "NA",
-                                    TermId = terms.FirstOrDefault().Id,
-                                    TIN = supplier.TaxNumber,
-                                    AccountId = 254,
-                                    EntryUserId = defaultSettings.FirstOrDefault().PostUserId,
-                                    EntryDateTime = DateTime.Now,
-                                    UpdateUserId = defaultSettings.FirstOrDefault().PostUserId,
-                                    UpdateDateTime = DateTime.Now,
-                                    IsLocked = true,
-                                };
+                                    Boolean foundChanges = false;
 
-                                posData.MstSuppliers.InsertOnSubmit(newSupplier);
-                                posData.SubmitChanges();
+                                    if (!foundChanges)
+                                    {
+                                        if (!currentSupplier.FirstOrDefault().Supplier.Equals(supplier.Article))
+                                        {
+                                            foundChanges = true;
+                                        }
+                                    }
 
-                                Console.WriteLine("Supplier: " + supplier.Article);
-                                Console.WriteLine("Save Successful!");
-                                Console.WriteLine();
+                                    if (!foundChanges)
+                                    {
+                                        if (!currentSupplier.FirstOrDefault().Address.Equals(supplier.Address))
+                                        {
+                                            foundChanges = true;
+                                        }
+                                    }
 
-                                File.Delete(file);
+                                    if (!foundChanges)
+                                    {
+                                        if (!currentSupplier.FirstOrDefault().CellphoneNumber.Equals(supplier.ContactNumber))
+                                        {
+                                            foundChanges = true;
+                                        }
+                                    }
+
+                                    if (!foundChanges)
+                                    {
+                                        if (!currentSupplier.FirstOrDefault().MstTerm.Term.Equals(supplier.Term))
+                                        {
+                                            foundChanges = true;
+                                        }
+                                    }
+
+                                    if (!foundChanges)
+                                    {
+                                        if (!currentSupplier.FirstOrDefault().TIN.Equals(supplier.TaxNumber))
+                                        {
+                                            foundChanges = true;
+                                        }
+                                    }
+
+                                    if (foundChanges)
+                                    {
+                                        Console.WriteLine("Updating Supplier: " + currentSupplier.FirstOrDefault().Supplier);
+
+                                        var updateSupplier = currentSupplier.FirstOrDefault();
+                                        updateSupplier.Supplier = supplier.Article;
+                                        updateSupplier.Address = supplier.Address;
+                                        updateSupplier.CellphoneNumber = supplier.ContactNumber;
+                                        updateSupplier.TermId = terms.FirstOrDefault().Id;
+                                        updateSupplier.TIN = supplier.TaxNumber;
+                                        updateSupplier.UpdateUserId = defaultSettings.FirstOrDefault().PostUserId;
+                                        updateSupplier.UpdateDateTime = DateTime.Now;
+                                        posData.SubmitChanges();
+
+                                        Console.WriteLine("Update Successful!");
+                                        Console.WriteLine();
+                                    }
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Saving Supplier: " + supplier.Article);
+
+                                    Data.MstSupplier newSupplier = new Data.MstSupplier
+                                    {
+                                        Supplier = supplier.Article,
+                                        Address = supplier.Address,
+                                        TelephoneNumber = "NA",
+                                        CellphoneNumber = supplier.ContactNumber,
+                                        FaxNumber = "NA",
+                                        TermId = terms.FirstOrDefault().Id,
+                                        TIN = supplier.TaxNumber,
+                                        AccountId = 254,
+                                        EntryUserId = defaultSettings.FirstOrDefault().PostUserId,
+                                        EntryDateTime = DateTime.Now,
+                                        UpdateUserId = defaultSettings.FirstOrDefault().PostUserId,
+                                        UpdateDateTime = DateTime.Now,
+                                        IsLocked = true,
+                                    };
+
+                                    posData.MstSuppliers.InsertOnSubmit(newSupplier);
+                                    posData.SubmitChanges();
+
+                                    Console.WriteLine("Save Successful!");
+                                    Console.WriteLine();
+                                }
                             }
                             else
                             {
-                                var defaultSettings = from d in posData.SysSettings select d;
-
-                                var updateSupplier = suppliers.FirstOrDefault();
-                                updateSupplier.Supplier = supplier.Article;
-                                updateSupplier.Address = supplier.Address;
-                                updateSupplier.CellphoneNumber = supplier.ContactNumber;
-                                updateSupplier.TermId = terms.FirstOrDefault().Id;
-                                updateSupplier.TIN = supplier.TaxNumber;
-                                updateSupplier.UpdateUserId = defaultSettings.FirstOrDefault().PostUserId;
-                                updateSupplier.UpdateDateTime = DateTime.Now;
-                                posData.SubmitChanges();
-
-                                Console.WriteLine("Supplier: " + supplier.Article);
-                                Console.WriteLine("Update Successful!");
+                                Console.WriteLine("Cannot Save Supplier: " + supplier.Article);
+                                Console.WriteLine("Term Mismatch!");
                                 Console.WriteLine();
-
-                                File.Delete(file);
                             }
-                        }
-                        else
-                        {
-                            Console.WriteLine("Supplier: " + supplier.Article);
-                            Console.WriteLine("Save Failed! Term Mismatch!");
-                            Console.WriteLine();
-
-                            File.Delete(file);
                         }
                     }
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Console.WriteLine(e.Message);
             }
         }
     }
