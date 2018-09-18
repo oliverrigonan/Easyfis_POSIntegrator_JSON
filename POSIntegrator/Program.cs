@@ -18,7 +18,7 @@ namespace POSIntegrator
         public static void Main(String[] args)
         {
             Int32 i = 0;
-            String apiUrlHost = "", database = "";
+            String apiUrlHost = "localhost:2651", database = "pos13";
             foreach (var arg in args)
             {
                 if (i == 0) { apiUrlHost = arg; }
@@ -27,7 +27,7 @@ namespace POSIntegrator
             }
 
             Console.WriteLine("=================================================");
-            Console.WriteLine("Innosoft POS Integrator - Version: 1.20180917.NOR");
+            Console.WriteLine("Innosoft POS Integrator - Version: 1.20180918.NOR");
             Console.WriteLine("=================================================");
 
             Console.WriteLine();

@@ -63,7 +63,7 @@ namespace POSIntegrator.Controllers
                             var currentStockOut = from d in posData.TrnStockOuts where d.Remarks.Equals("OT-" + stockOut.BranchCode + "-" + stockOut.OTNumber) && d.TrnStockOutLines.Count() > 0 select d;
                             if (!currentStockOut.Any())
                             {
-                                Console.WriteLine("Saving Stock Out: OT - " + stockOut.BranchCode + " - " + stockOut.OTNumber);
+                                Console.WriteLine("Saving Stock Out: OT-" + stockOut.BranchCode + "-" + stockOut.OTNumber);
 
                                 var defaultPeriod = from d in posData.MstPeriods select d;
                                 var defaultSettings = from d in posData.SysSettings select d;
@@ -89,7 +89,7 @@ namespace POSIntegrator.Controllers
                                         StockOutDate = Convert.ToDateTime(stockOut.OTDate),
                                         StockOutNumber = stockOutNumberResult,
                                         AccountId = accounts.FirstOrDefault().Id,
-                                        Remarks = "OT - " + stockOut.BranchCode + " - " + stockOut.OTNumber,
+                                        Remarks = "OT-" + stockOut.BranchCode + "-" + stockOut.OTNumber,
                                         PreparedBy = defaultSettings.FirstOrDefault().PostUserId,
                                         CheckedBy = defaultSettings.FirstOrDefault().PostUserId,
                                         ApprovedBy = defaultSettings.FirstOrDefault().PostUserId,
@@ -131,7 +131,7 @@ namespace POSIntegrator.Controllers
 
                                                     posData.SubmitChanges();
 
-                                                    Console.WriteLine("* " + currentItem.FirstOrDefault().ItemDescription);
+                                                    Console.WriteLine(" > " + currentItem.FirstOrDefault().ItemDescription + " * " + item.Quantity.ToString("#,##0.00"));
                                                 }
                                             }
                                         }
@@ -154,6 +154,7 @@ namespace POSIntegrator.Controllers
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
+                Console.WriteLine();
             }
         }
     }

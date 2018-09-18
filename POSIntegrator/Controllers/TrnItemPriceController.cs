@@ -44,71 +44,31 @@ namespace POSIntegrator.Controllers
                             var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
                             Data.POSDatabaseDataContext posData = new Data.POSDatabaseDataContext(newConnectionString);
 
-                            var item = from d in posData.MstItems where d.BarCode.Equals(itemPrice.ItemCode) select d;
-                            if (item.Any())
+                            var currentItem = from d in posData.MstItems where d.BarCode.Equals(itemPrice.ItemCode) select d;
+                            if (currentItem.Any())
                             {
-                                var currentItemPrice = from d in posData.MstItemPrices where d.ItemId == item.FirstOrDefault().Id select d;
-                                if (currentItemPrice.Any())
+                                if (currentItem.FirstOrDefault().UpdateDateTime.Date != DateTime.Today)
                                 {
-                                    Boolean foundChanges = false;
-
-                                    if (!foundChanges)
+                                    var currentItemPrice = from d in posData.MstItemPrices where d.ItemId == currentItem.FirstOrDefault().Id && d.PriceDescription.Equals("IP-" + itemPrice.BranchCode + "-" + itemPrice.IPNumber + " (" + itemPrice.IPDate + ")") select d;
+                                    if (!currentItemPrice.Any())
                                     {
-                                        if (!currentItemPrice.FirstOrDefault().PriceDescription.Equals("IP-" + itemPrice.BranchCode + "-" + itemPrice.IPNumber + " (" + itemPrice.IPDate + ")"))
+                                        Console.WriteLine("Saving Item Price: IP-" + itemPrice.BranchCode + "-" + itemPrice.IPNumber + " (" + itemPrice.IPDate + ")");
+                                        Console.WriteLine("Current Item: " + currentItem.FirstOrDefault().ItemDescription);
+
+                                        Data.MstItemPrice newPrice = new Data.MstItemPrice()
                                         {
-                                            foundChanges = true;
-                                        }
-                                    }
+                                            ItemId = currentItem.FirstOrDefault().Id,
+                                            PriceDescription = "IP-" + itemPrice.BranchCode + "-" + itemPrice.IPNumber + " (" + itemPrice.IPDate + ")",
+                                            Price = itemPrice.Price,
+                                            TriggerQuantity = itemPrice.TriggerQuantity
+                                        };
 
-                                    if (!foundChanges)
-                                    {
-                                        if (currentItemPrice.FirstOrDefault().Price != itemPrice.Price)
-                                        {
-                                            foundChanges = true;
-                                        }
-                                    }
-
-                                    if (!foundChanges)
-                                    {
-                                        if (currentItemPrice.FirstOrDefault().TriggerQuantity != itemPrice.TriggerQuantity)
-                                        {
-                                            foundChanges = true;
-                                        }
-                                    }
-
-                                    if (foundChanges)
-                                    {
-                                        Console.WriteLine("Updating Item Price: " + currentItemPrice.FirstOrDefault().PriceDescription);
-                                        Console.WriteLine("Current Item: " + item.FirstOrDefault().ItemDescription);
-
-                                        var updateItemPrice = currentItemPrice.FirstOrDefault();
-                                        updateItemPrice.PriceDescription = "IP-" + itemPrice.BranchCode + "-" + itemPrice.IPNumber + " (" + itemPrice.IPDate + ")";
-                                        updateItemPrice.Price = itemPrice.Price;
-                                        updateItemPrice.TriggerQuantity = itemPrice.TriggerQuantity;
+                                        posData.MstItemPrices.InsertOnSubmit(newPrice);
                                         posData.SubmitChanges();
 
-                                        Console.WriteLine("Update Successful!");
+                                        Console.WriteLine("Save Successful!");
                                         Console.WriteLine();
                                     }
-                                }
-                                else
-                                {
-                                    Console.WriteLine("Saving Item Price: IP-" + itemPrice.BranchCode + "-" + itemPrice.IPNumber + " (" + itemPrice.IPDate + ")");
-                                    Console.WriteLine("Current Item: " + item.FirstOrDefault().ItemDescription);
-
-                                    Data.MstItemPrice newPrice = new Data.MstItemPrice()
-                                    {
-                                        ItemId = item.FirstOrDefault().Id,
-                                        PriceDescription = "IP-" + itemPrice.BranchCode + "-" + itemPrice.IPNumber + " (" + itemPrice.IPDate + ")",
-                                        Price = itemPrice.Price,
-                                        TriggerQuantity = itemPrice.TriggerQuantity
-                                    };
-
-                                    posData.MstItemPrices.InsertOnSubmit(newPrice);
-                                    posData.SubmitChanges();
-
-                                    Console.WriteLine("Save Successful!");
-                                    Console.WriteLine();
                                 }
                             }
                             else
@@ -124,6 +84,7 @@ namespace POSIntegrator.Controllers
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
+                Console.WriteLine();
             }
         }
     }

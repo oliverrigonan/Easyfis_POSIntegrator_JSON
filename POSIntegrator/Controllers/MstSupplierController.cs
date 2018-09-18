@@ -97,6 +97,7 @@ namespace POSIntegrator.Controllers
                                     if (foundChanges)
                                     {
                                         Console.WriteLine("Updating Supplier: " + currentSupplier.FirstOrDefault().Supplier);
+                                        Console.WriteLine("Contact No.: " + currentSupplier.FirstOrDefault().CellphoneNumber);
 
                                         var updateSupplier = currentSupplier.FirstOrDefault();
                                         updateSupplier.Supplier = supplier.Article;
@@ -115,6 +116,7 @@ namespace POSIntegrator.Controllers
                                 else
                                 {
                                     Console.WriteLine("Saving Supplier: " + supplier.Article);
+                                    Console.WriteLine("Contact No.: " + supplier.ContactNumber);
 
                                     Data.MstSupplier newSupplier = new Data.MstSupplier
                                     {
@@ -144,6 +146,7 @@ namespace POSIntegrator.Controllers
                             {
                                 Console.WriteLine("Cannot Save Supplier: " + supplier.Article);
                                 Console.WriteLine("Term Mismatch!");
+                                Console.WriteLine("Save Failed!");
                                 Console.WriteLine();
                             }
                         }
@@ -153,6 +156,7 @@ namespace POSIntegrator.Controllers
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
+                Console.WriteLine();
             }
         }
     }

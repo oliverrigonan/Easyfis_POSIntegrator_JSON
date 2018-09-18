@@ -72,6 +72,7 @@ namespace POSIntegrator.Controllers
                                     String json = new JavaScriptSerializer().Serialize(collectionData);
 
                                     Console.WriteLine("Sending Returned Sales: " + collectionData.DocumentReference);
+                                    Console.WriteLine("Amount: " + collectionData.ListPOSIntegrationTrnSalesInvoiceItem.Sum(d => d.Amount).ToString("#,##0.00"));
                                     SendSalesReturn(database, apiUrlHost, json);
                                 }
                             }
@@ -83,6 +84,7 @@ namespace POSIntegrator.Controllers
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
+                Console.WriteLine();
             }
         }
 

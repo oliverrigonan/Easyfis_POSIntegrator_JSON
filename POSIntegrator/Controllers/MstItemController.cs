@@ -185,6 +185,7 @@ namespace POSIntegrator.Controllers
                                             if (foundChanges)
                                             {
                                                 Console.WriteLine("Updating Item: " + currentItem.FirstOrDefault().ItemDescription);
+                                                Console.WriteLine("Barcode: " + currentItem.FirstOrDefault().BarCode);
 
                                                 var updateItem = currentItem.FirstOrDefault();
                                                 updateItem.BarCode = item.ManualArticleCode;
@@ -241,6 +242,7 @@ namespace POSIntegrator.Controllers
                                         else
                                         {
                                             Console.WriteLine("Saving Item: " + item.Article);
+                                            Console.WriteLine("Barcode: " + item.ManualArticleCode);
 
                                             var defaultItemCode = "000001";
                                             var lastItem = from d in posData.MstItems.OrderByDescending(d => d.Id) select d;
@@ -313,6 +315,7 @@ namespace POSIntegrator.Controllers
                                     {
                                         Console.WriteLine("Cannot Save Item: " + item.Article);
                                         Console.WriteLine("Empty Supplier!");
+                                        Console.WriteLine("Save Failed!");
                                         Console.WriteLine();
                                     }
                                 }
@@ -320,6 +323,7 @@ namespace POSIntegrator.Controllers
                                 {
                                     Console.WriteLine("Cannot Save Item: " + item.Article);
                                     Console.WriteLine("Output Tax Mismatch!");
+                                    Console.WriteLine("Save Failed!");
                                     Console.WriteLine();
                                 }
                             }
@@ -327,6 +331,7 @@ namespace POSIntegrator.Controllers
                             {
                                 Console.WriteLine("Cannot Save Item: " + item.Article);
                                 Console.WriteLine("Unit Mismatch!");
+                                Console.WriteLine("Save Failed!");
                                 Console.WriteLine();
                             }
                         }
@@ -336,6 +341,7 @@ namespace POSIntegrator.Controllers
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
+                Console.WriteLine();
             }
         }
     }

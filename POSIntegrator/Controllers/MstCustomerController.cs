@@ -113,6 +113,7 @@ namespace POSIntegrator.Controllers
                                     if (foundChanges)
                                     {
                                         Console.WriteLine("Updating Customer: " + currentCustomer.FirstOrDefault().Customer);
+                                        Console.WriteLine("Customer Code: " + currentCustomer.FirstOrDefault().CustomerCode);
 
                                         var updateCustomer = currentCustomer.FirstOrDefault();
                                         updateCustomer.Customer = customer.Article;
@@ -134,6 +135,7 @@ namespace POSIntegrator.Controllers
                                 else
                                 {
                                     Console.WriteLine("Saving Customer: " + customer.Article);
+                                    Console.WriteLine("Customer Code: " + customer.ManualArticleCode);
 
                                     Data.MstCustomer newCustomer = new Data.MstCustomer
                                     {
@@ -168,6 +170,7 @@ namespace POSIntegrator.Controllers
                             {
                                 Console.WriteLine("Cannot Save Customer: " + customer.Article);
                                 Console.WriteLine("Term Mismatch!");
+                                Console.WriteLine("Save Failed!");
                                 Console.WriteLine();
                             }
                         }
@@ -177,6 +180,7 @@ namespace POSIntegrator.Controllers
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
+                Console.WriteLine();
             }
         }
     }

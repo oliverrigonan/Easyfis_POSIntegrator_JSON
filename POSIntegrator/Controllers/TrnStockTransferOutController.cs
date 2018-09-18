@@ -133,7 +133,7 @@ namespace POSIntegrator.Controllers
 
                                                     posData.SubmitChanges();
 
-                                                    Console.WriteLine("* " + currentItem.FirstOrDefault().ItemDescription);
+                                                    Console.WriteLine(" > " + currentItem.FirstOrDefault().ItemDescription + " * " + item.Quantity.ToString("#,##0.00"));
                                                 }
                                             }
                                         }
@@ -156,6 +156,7 @@ namespace POSIntegrator.Controllers
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
+                Console.WriteLine();
             }
         }
     }
