@@ -110,11 +110,14 @@ namespace POSIntegrator.Controllers
                                                 }
                                             }
 
-                                            if (!foundChanges)
+                                            if (!defaultSettings.FirstOrDefault().UseItemPrice)
                                             {
-                                                if (currentItem.FirstOrDefault().Price != item.Price)
+                                                if (!foundChanges)
                                                 {
-                                                    foundChanges = true;
+                                                    if (currentItem.FirstOrDefault().Price != item.Price)
+                                                    {
+                                                        foundChanges = true;
+                                                    }
                                                 }
                                             }
 
@@ -153,33 +156,37 @@ namespace POSIntegrator.Controllers
                                                 }
                                             }
 
-                                            if (!foundChanges)
+                                            if (!defaultSettings.FirstOrDefault().UseItemPrice)
                                             {
-                                                if (item.ListItemPrice.Any())
+                                                if (!foundChanges)
                                                 {
-                                                    var posItemPrices = from d in posData.MstItemPrices where d.MstItem.BarCode.Equals(item.ManualArticleCode) select d;
-                                                    if (posItemPrices.Any())
+                                                    if (item.ListItemPrice.Any())
                                                     {
-                                                        int posItemPriceCount = posItemPrices.Count();
-                                                        int itemPriceListCount = item.ListItemPrice.Count();
+                                                        var posItemPrices = from d in posData.MstItemPrices where d.MstItem.BarCode.Equals(item.ManualArticleCode) select d;
+                                                        if (posItemPrices.Any())
+                                                        {
+                                                            int posItemPriceCount = posItemPrices.Count();
+                                                            int itemPriceListCount = item.ListItemPrice.Count();
 
-                                                        if (posItemPriceCount != itemPriceListCount)
-                                                        {
-                                                            foundChanges = true;
-                                                        }
-                                                        else
-                                                        {
-                                                            foreach (var itemPrice in item.ListItemPrice.ToList())
+                                                            if (posItemPriceCount != itemPriceListCount)
                                                             {
-                                                                var currentPOSItemPrices = from d in posItemPrices where d.PriceDescription.Equals(itemPrice.PriceDescription) && d.Price == itemPrice.Price select d;
-                                                                if (!currentPOSItemPrices.Any())
+                                                                foundChanges = true;
+                                                            }
+                                                            else
+                                                            {
+                                                                foreach (var itemPrice in item.ListItemPrice.ToList())
                                                                 {
-                                                                    foundChanges = true;
+                                                                    var currentPOSItemPrices = from d in posItemPrices where d.PriceDescription.Equals(itemPrice.PriceDescription) && d.Price == itemPrice.Price select d;
+                                                                    if (!currentPOSItemPrices.Any())
+                                                                    {
+                                                                        foundChanges = true;
+                                                                    }
                                                                 }
                                                             }
                                                         }
                                                     }
                                                 }
+
                                             }
 
                                             if (foundChanges)
@@ -194,7 +201,12 @@ namespace POSIntegrator.Controllers
                                                 updateItem.GenericName = item.Article;
                                                 updateItem.Category = item.Category;
                                                 updateItem.UnitId = units.FirstOrDefault().Id;
-                                                updateItem.Price = item.Price;
+
+                                                if (!defaultSettings.FirstOrDefault().UseItemPrice)
+                                                {
+                                                    updateItem.Price = item.Price;
+                                                }
+
                                                 updateItem.Cost = item.Cost;
                                                 updateItem.IsInventory = item.IsInventory;
                                                 updateItem.Remarks = item.Particulars;
@@ -203,35 +215,38 @@ namespace POSIntegrator.Controllers
                                                 updateItem.UpdateDateTime = DateTime.Now;
                                                 posData.SubmitChanges();
 
-                                                if (item.ListItemPrice.Any())
+                                                if (!defaultSettings.FirstOrDefault().UseItemPrice)
                                                 {
-                                                    var posItemPrices = from d in posData.MstItemPrices where d.ItemId == currentItem.FirstOrDefault().Id select d;
-
-                                                    bool isEmpty = false;
-                                                    if (posItemPrices.Any())
+                                                    if (item.ListItemPrice.Any())
                                                     {
-                                                        posData.MstItemPrices.DeleteAllOnSubmit(posItemPrices);
-                                                        posData.SubmitChanges();
+                                                        var posItemPrices = from d in posData.MstItemPrices where d.ItemId == currentItem.FirstOrDefault().Id select d;
 
-                                                        isEmpty = true;
-                                                    }
-
-                                                    if (isEmpty)
-                                                    {
-                                                        foreach (var itemPrice in item.ListItemPrice.ToList())
+                                                        bool isEmpty = false;
+                                                        if (posItemPrices.Any())
                                                         {
-                                                            Data.MstItemPrice newItemPrice = new Data.MstItemPrice
-                                                            {
-                                                                ItemId = currentItem.FirstOrDefault().Id,
-                                                                PriceDescription = itemPrice.PriceDescription,
-                                                                Price = itemPrice.Price,
-                                                                TriggerQuantity = 0
-                                                            };
+                                                            posData.MstItemPrices.DeleteAllOnSubmit(posItemPrices);
+                                                            posData.SubmitChanges();
 
-                                                            posData.MstItemPrices.InsertOnSubmit(newItemPrice);
+                                                            isEmpty = true;
                                                         }
 
-                                                        posData.SubmitChanges();
+                                                        if (isEmpty)
+                                                        {
+                                                            foreach (var itemPrice in item.ListItemPrice.ToList())
+                                                            {
+                                                                Data.MstItemPrice newItemPrice = new Data.MstItemPrice
+                                                                {
+                                                                    ItemId = currentItem.FirstOrDefault().Id,
+                                                                    PriceDescription = itemPrice.PriceDescription,
+                                                                    Price = itemPrice.Price,
+                                                                    TriggerQuantity = 0
+                                                                };
+
+                                                                posData.MstItemPrices.InsertOnSubmit(newItemPrice);
+                                                            }
+
+                                                            posData.SubmitChanges();
+                                                        }
                                                     }
                                                 }
 

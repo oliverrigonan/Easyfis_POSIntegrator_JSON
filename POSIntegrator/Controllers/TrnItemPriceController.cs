@@ -35,7 +35,7 @@ namespace POSIntegrator.Controllers
                 {
                     var result = streamReader.ReadToEnd();
                     JavaScriptSerializer js = new JavaScriptSerializer();
-                    List<TrnArticlePrice> itemPriceLists = (List<POSIntegrator.TrnArticlePrice>)js.Deserialize(result, typeof(List<TrnArticlePrice>));
+                    List<TrnArticlePrice> itemPriceLists = (List<TrnArticlePrice>)js.Deserialize(result, typeof(List<TrnArticlePrice>));
 
                     if (itemPriceLists.Any())
                     {
@@ -47,33 +47,35 @@ namespace POSIntegrator.Controllers
                             var currentItem = from d in posData.MstItems where d.BarCode.Equals(itemPrice.ItemCode) select d;
                             if (currentItem.Any())
                             {
-                                if (currentItem.FirstOrDefault().UpdateDateTime.Date != DateTime.Today)
+                                var currentItemPrice = from d in posData.MstItemPrices where d.ItemId == currentItem.FirstOrDefault().Id && d.PriceDescription.Equals("IP-" + itemPrice.BranchCode + "-" + itemPrice.IPNumber + " (" + itemPrice.IPDate + ")") select d;
+                                if (!currentItemPrice.Any())
                                 {
-                                    var currentItemPrice = from d in posData.MstItemPrices where d.ItemId == currentItem.FirstOrDefault().Id && d.PriceDescription.Equals("IP-" + itemPrice.BranchCode + "-" + itemPrice.IPNumber + " (" + itemPrice.IPDate + ")") select d;
-                                    if (!currentItemPrice.Any())
+                                    Console.WriteLine("Saving Item Price: IP-" + itemPrice.BranchCode + "-" + itemPrice.IPNumber + " (" + itemPrice.IPDate + ")");
+                                    Console.WriteLine("Current Item: " + currentItem.FirstOrDefault().ItemDescription);
+
+                                    Data.MstItemPrice newPrice = new Data.MstItemPrice()
                                     {
-                                        Console.WriteLine("Saving Item Price: IP-" + itemPrice.BranchCode + "-" + itemPrice.IPNumber + " (" + itemPrice.IPDate + ")");
-                                        Console.WriteLine("Current Item: " + currentItem.FirstOrDefault().ItemDescription);
+                                        ItemId = currentItem.FirstOrDefault().Id,
+                                        PriceDescription = "IP-" + itemPrice.BranchCode + "-" + itemPrice.IPNumber + " (" + itemPrice.IPDate + ")",
+                                        Price = itemPrice.Price,
+                                        TriggerQuantity = itemPrice.TriggerQuantity
+                                    };
 
-                                        Data.MstItemPrice newPrice = new Data.MstItemPrice()
-                                        {
-                                            ItemId = currentItem.FirstOrDefault().Id,
-                                            PriceDescription = "IP-" + itemPrice.BranchCode + "-" + itemPrice.IPNumber + " (" + itemPrice.IPDate + ")",
-                                            Price = itemPrice.Price,
-                                            TriggerQuantity = itemPrice.TriggerQuantity
-                                        };
+                                    posData.MstItemPrices.InsertOnSubmit(newPrice);
 
-                                        posData.MstItemPrices.InsertOnSubmit(newPrice);
-                                        posData.SubmitChanges();
+                                    var updateCurrentItem = currentItem.FirstOrDefault();
+                                    updateCurrentItem.Price = itemPrice.Price;
 
-                                        Console.WriteLine("Save Successful!");
-                                        Console.WriteLine();
-                                    }
+                                    posData.SubmitChanges();
+
+                                    Console.WriteLine("Save Successful!");
+                                    Console.WriteLine();
                                 }
                             }
                             else
                             {
                                 Console.WriteLine("Cannot Save Item Price: IP-" + itemPrice.BranchCode + "-" + itemPrice.IPNumber + " (" + itemPrice.IPDate + ")" + "...");
+                                Console.WriteLine("Price: " + itemPrice.Price);
                                 Console.WriteLine("Item Not Found!");
                                 Console.WriteLine();
                             }

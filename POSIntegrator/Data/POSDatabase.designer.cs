@@ -11185,6 +11185,8 @@ namespace POSIntegrator.Data
 		
 		private int _PostSupplierId;
 		
+		private bool _UseItemPrice;
+		
 		private EntityRef<MstSupplier> _MstSupplier;
 		
 		private EntityRef<MstUser> _MstUser;
@@ -11203,6 +11205,8 @@ namespace POSIntegrator.Data
     partial void OnPostUserIdChanged();
     partial void OnPostSupplierIdChanging(int value);
     partial void OnPostSupplierIdChanged();
+    partial void OnUseItemPriceChanging(bool value);
+    partial void OnUseItemPriceChanged();
     #endregion
 		
 		public SysSetting()
@@ -11316,6 +11320,26 @@ namespace POSIntegrator.Data
 					this._PostSupplierId = value;
 					this.SendPropertyChanged("PostSupplierId");
 					this.OnPostSupplierIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UseItemPrice", DbType="Bit NOT NULL")]
+		public bool UseItemPrice
+		{
+			get
+			{
+				return this._UseItemPrice;
+			}
+			set
+			{
+				if ((this._UseItemPrice != value))
+				{
+					this.OnUseItemPriceChanging(value);
+					this.SendPropertyChanging();
+					this._UseItemPrice = value;
+					this.SendPropertyChanged("UseItemPrice");
+					this.OnUseItemPriceChanged();
 				}
 			}
 		}

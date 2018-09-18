@@ -466,6 +466,7 @@
       <Column Name="UserCode" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="PostUserId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="PostSupplierId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="UseItemPrice" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
       <Association Name="MstSupplier_SysSetting" Member="MstSupplier" ThisKey="PostSupplierId" OtherKey="Id" Type="MstSupplier" IsForeignKey="true" />
       <Association Name="MstUser_SysSetting" Member="MstUser" ThisKey="PostUserId" OtherKey="Id" Type="MstUser" IsForeignKey="true" />
     </Type>

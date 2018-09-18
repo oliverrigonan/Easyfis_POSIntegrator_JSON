@@ -93,6 +93,7 @@ namespace POSIntegrator
                     {
                         var branchCode = sysSettings.FirstOrDefault().BranchCode;
                         var userCode = sysSettings.FirstOrDefault().UserCode;
+                        var useItemPrice = sysSettings.FirstOrDefault().UseItemPrice;
 
                         // ============
                         // Master Files
@@ -115,7 +116,7 @@ namespace POSIntegrator
                         // ====================
                         objTrnCollection.GetCollection(database, apiUrlHost, branchCode, userCode);
                         objTrnSalesReturn.GetSalesReturn(database, apiUrlHost, branchCode, userCode);
-                        objTrnItemPrice.GetItemPrice(database, apiUrlHost, branchCode);
+                        if (useItemPrice) { objTrnItemPrice.GetItemPrice(database, apiUrlHost, branchCode); }
                     }
                 }
 
