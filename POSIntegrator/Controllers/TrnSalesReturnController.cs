@@ -29,7 +29,7 @@ namespace POSIntegrator.Controllers
                         var terms = from d in posData.MstTerms select d;
                         if (terms.Any())
                         {
-                            var stockIns = from d in posData.TrnStockIns where d.IsReturn == true && d.CollectionId != null && d.PostCode == null && d.IsLocked == true select d;
+                            var stockIns = from d in posData.TrnStockIns where d.IsReturn == true && d.CollectionId != null && d.SalesId != null && d.PostCode == null && d.IsLocked == true select d;
                             if (stockIns.Any())
                             {
                                 var stockIn = stockIns.FirstOrDefault();
@@ -49,8 +49,8 @@ namespace POSIntegrator.Controllers
                                             Price = stockInLine.Cost * -1,
                                             Discount = discounts.FirstOrDefault().Discount,
                                             DiscountAmount = 0,
-                                            NetPrice = (stockInLine.Cost * -1),
-                                            Amount = ((stockInLine.Quantity * -1) * (stockInLine.Cost * -1)) * -1,
+                                            NetPrice = stockInLine.Cost * -1,
+                                            Amount = (stockInLine.Quantity * stockInLine.Cost) * -1,
                                             VAT = taxes.FirstOrDefault().Tax,
                                             SalesItemTimeStamp = DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss.fff", CultureInfo.InvariantCulture)
                                         });

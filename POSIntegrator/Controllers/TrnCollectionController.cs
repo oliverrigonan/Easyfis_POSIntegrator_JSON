@@ -20,7 +20,7 @@ namespace POSIntegrator.Controllers
                 var newConnectionString = "Data Source=localhost;Initial Catalog=" + database + ";Integrated Security=True";
                 Data.POSDatabaseDataContext posData = new Data.POSDatabaseDataContext(newConnectionString);
 
-                var collections = from d in posData.TrnCollections where d.PostCode == null && d.CollectionNumber != "NA" && d.IsLocked == true select d;
+                var collections = from d in posData.TrnCollections where d.PostCode == null && d.CollectionNumber != "NA" && d.SalesId != null && d.IsLocked == true select d;
                 if (collections.Any())
                 {
                     var collection = collections.FirstOrDefault();
